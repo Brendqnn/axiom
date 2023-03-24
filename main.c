@@ -3,12 +3,10 @@
 int main(void)
 {
     GLFWwindow* window;
-
-    /* Initialize the library */
+    
     if (!glfwInit())
         return -1;
 
-    /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(800, 600, "ELMO IS EVIL", NULL, NULL);
     if (!window)
     {
@@ -16,15 +14,19 @@ int main(void)
         return -1;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
-    {
+   
+    while (!glfwWindowShouldClose(window)) {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+		static float angle = 0.0f;
+		angle += 0.01f;
+
+		glPushMatrix();
+		glTranslatef(0.0f, 0.0f, 0.0f);
+		glRotatef(angle, 0.0f, 0.0f, 1.0f);
+		
 		glBegin(GL_TRIANGLES);
 
 		glColor3f(1.0f, 0.0f, 0.0f);
@@ -34,11 +36,11 @@ int main(void)
 		glColor3f(0.0f, 0.0f, 1.0f);
 		glVertex2f(0.0f, 0.5f);
 		glEnd();
-		
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
 
-        /* Poll for and process events */
+		glPopMatrix();
+		
+        glfwSwapBuffers(window);
+        
         glfwPollEvents();
     }
 
