@@ -1,14 +1,17 @@
 # Define the compiler and linker flags
-CC = gcc
-CFLAGS = -Wall -g -I C:\sdk\glfw-64\include
-LDFLAGS = -L C:\sdk\glfw-64\lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32 -luser32
+CC = gcc -std=c99
+CFLAGS = -Wall -g -I $(GLFW_INCLUDE_PATH) -I $(GLEW_INCLUDE_PATH)
+LDFLAGS = -L $(GLFW_LIB_PATH) -L $(GLEW_LIB_PATH) -lglfw3 -lopengl32 -lgdi32 -luser32 -lglew32
 
+# Set environment variables for include and lib paths
+GLFW_INCLUDE_PATH = C:\sdk\glfw-64\include
+GLFW_LIB_PATH = C:\sdk\glfw-64\lib-mingw-w64
+GLEW_INCLUDE_PATH = C:\sdk\glew-2.1.0\include
+GLEW_LIB_PATH = C:\sdk\glew-2.1.0\lib\Release\x64
 
-# Define the source files and the target executable
 SOURCES = main.c
 EXECUTABLE = main.exe
 
-# Define the build rules
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(SOURCES)
@@ -16,3 +19,5 @@ $(EXECUTABLE): $(SOURCES)
 
 clean:
 	rm -f $(EXECUTABLE)
+
+
