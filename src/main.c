@@ -6,9 +6,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
+#include "shader.h"
+#include "vbo.h"
+#include "vao.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
+
 
 static const char *VERTEX_SHADER =
     "#version 330 core\n"
@@ -26,6 +30,7 @@ static const char *FRAGMENT_SHADER =
     "void main() {\n"
     "   fragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
     "}\n";
+
 
 int main() {
     // Initialize GLFW
@@ -56,44 +61,13 @@ int main() {
     // Set the viewport size
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    // Load the vertex and fragment shaders
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &VERTEX_SHADER, NULL);
-    glCompileShader(vertexShader);
+	GLuint shader = shader_load(VERTEX_SHADER, FRAGMENT_SHADER);
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &FRAGMENT_SHADER, NULL);
-    glCompileShader(fragmentShader);
+    GLuint vbo;
+	setup_vbo(vbo);
 
-    // Create the shader program
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // Delete the shaders
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    // Set up the vertex data
-	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f
-	};
-
-    // Create the vertex buffer object
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Create the vertex array object
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+    GLuint vao;
+	setup_vao(vao);
 
     // Set up the model, view, and projection matrices
 	mat4 model;
@@ -106,9 +80,9 @@ int main() {
 
 
     // Get the location of the model, view, and projection uniform variables in the shader program
-    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
-    GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
-    GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    GLint modelLoc = glGetUniformLocation(shader, "model");
+    GLint viewLoc = glGetUniformLocation(shader, "view");
+    GLint projectionLoc = glGetUniformLocation(shader, "projection");
 
     // Set up the rendering loop
     double previousTime = glfwGetTime();
@@ -130,7 +104,7 @@ int main() {
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float*)projection);
 
         // Draw the triangle
-        glUseProgram(shaderProgram);
+        glUseProgram(shader);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -144,7 +118,7 @@ int main() {
     // Clean up
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(shader);
     glfwTerminate();
     return EXIT_SUCCESS;
 }
