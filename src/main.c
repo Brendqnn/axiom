@@ -63,9 +63,11 @@ int main(void) {
     }
 
     GLuint vbo, color_vbo;
+	
 	setup_vbo(vbo, color_vbo);
 
 	GLuint vao;
+	
 	setup_vao(vao);
 
     Shader shader = shader_create(vertex_shader, fragment_shader);
