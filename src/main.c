@@ -7,137 +7,95 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 #include "shader.h"
-#include "vbo.h"
 #include "vao.h"
+#include "vbo.h"
+
+
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
 
 
-static const char *VERTEX_SHADER =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 position;\n"
-    "uniform mat4 model;\n"
-    "uniform mat4 view;\n"
-    "uniform mat4 projection;\n"
-    "void main() {\n"
-    "   gl_Position = projection * view * model * vec4(position, 1.0);\n"
-    "}\n";
+const char* fragment_shader =
+        "#version 330 core\n"
+        "in vec3 color;\n"
+        "out vec4 FragColor;\n"
+        "void main()\n"
+        "{\n"
+        "    FragColor = vec4(color, 1.0f);\n"
+        "}\n";
 
-static const char *FRAGMENT_SHADER =
-    "#version 330 core\n"
-    "out vec4 fragColor;\n"
-    "void main() {\n"
-    "   fragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
-    "}\n";
+const char* vertex_shader =
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;\n"
+        "layout (location = 1) in vec3 aColor;\n"
+        "out vec3 color;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_Position = vec4(aPos, 1.0);\n"
+        "    color = aColor;\n"
+        "}\n";
 
 
-int main() {
+int main(void) {
+    GLFWwindow* window;
+
     // Initialize GLFW
     if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
-        return EXIT_FAILURE;
+        printf("Failed to initialize GLFW\n");
+        return -1;
     }
 
-    // Create a window
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Spinning Triangle", NULL, NULL);
+    // Create a windowed mode window and its OpenGL context
+    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Simple Triangle", NULL, NULL);
     if (!window) {
-        fprintf(stderr, "Failed to create GLFW window\n");
+        printf("Failed to create GLFW window\n");
         glfwTerminate();
-        return EXIT_FAILURE;
+        return -1;
     }
 
     // Make the window's context current
     glfwMakeContextCurrent(window);
 
     // Initialize GLEW
-    GLenum err = glewInit();
-    if (err != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW\n");
+    if (glewInit() != GLEW_OK) {
+        printf("Failed to initialize GLEW\n");
         glfwTerminate();
-        return EXIT_FAILURE;
+        return -1;
     }
 
-    // Set the viewport size
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	
+    GLuint vbo, color_vbo;
+	setup_vbo(vbo, color_vbo);
 
-	GLuint shader = shader_load(VERTEX_SHADER, FRAGMENT_SHADER);
-
-    GLuint vbo;
-	setup_vbo(vbo);
-
-    GLuint vao;
+	GLuint vao;
 	setup_vao(vao);
-
-    // Set up the model, view, and projection matrices
-	mat4 model;
-	mat4 view;
-	mat4 projection;
-	glm_mat4_identity(model);
-	glm_mat4_identity(view);
-	glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
-	glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f, projection);
-
-
-    // Get the location of the model, view, and projection uniform variables in the shader program
-    GLint modelLoc = glGetUniformLocation(shader, "model");
-    GLint viewLoc = glGetUniformLocation(shader, "view");
-    GLint projectionLoc = glGetUniformLocation(shader, "projection");
-
-    // Set up the rendering loop
-    double previousTime = glfwGetTime();
+    
+    Shader shader = shader_create(vertex_shader, fragment_shader);
+   
+		
     while (!glfwWindowShouldClose(window)) {
-        // Clear the color buffer
+   
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Calculate the time delta
-        double currentTime = glfwGetTime();
-        double deltaTime = currentTime - previousTime;
-        previousTime = currentTime;
-
-        // Rotate the model matrix
-        glm_rotate(model, deltaTime * 10.0f, (vec3){0.0f, 1.0f, 0.0f});
-
-        // Set the model, view, and projection matrices in the shader program
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float*)model);
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float*)view);
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float*)projection);
-
-        // Draw the triangle
-        glUseProgram(shader);
+		glUseProgram(shader.ID);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        // Swap the front and back buffers
+        // Swap buffers and poll for events
         glfwSwapBuffers(window);
-
-        // Poll for events
         glfwPollEvents();
     }
 
-    // Clean up
-    glDeleteVertexArrays(1, &vao);
+    // Clean up resources
+	shader_destroy(&shader);
     glDeleteBuffers(1, &vbo);
-    glDeleteProgram(shader);
+    glDeleteBuffers(1, &color_vbo);
+    glDeleteVertexArrays(1, &vao);
+
+    // Terminate GLFW
     glfwTerminate();
-    return EXIT_SUCCESS;
+    return 0;
 }
-
-
-	 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

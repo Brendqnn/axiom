@@ -5,6 +5,6 @@
 #include <GLFW/glfw3.h>
 
 
-void setup_vbo(GLuint vbo);
+void setup_vbo(GLuint vbo, GLuint color_vbo);
 
 #endif
