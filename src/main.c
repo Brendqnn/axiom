@@ -6,9 +6,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
-#include "shader.h"
-#include "vao.h"
-#include "vbo.h"
+#include "gfx/shader.h"
+#include "gfx/vao.h"
+#include "gfx/vbo.h"
 
 
 
@@ -30,11 +30,9 @@ const char* vertex_shader =
 	"layout (location = 0) in vec3 aPos;\n"
 	"layout (location = 1) in vec3 aColor;\n"
 	"out vec3 color;\n"
-	"uniform mat4 view;\n"
-	"uniform mat4 projection;\n"
 	"void main()\n"
 	"{\n"
-	"    gl_Position = projection * view *vec4(aPos, 1.0);\n"
+	"    gl_Position = vec4(aPos, 1.0);\n"
 	"    color = aColor;\n"
 	"}\n";
 
@@ -63,29 +61,14 @@ int main(void) {
     }
 
     GLuint vbo, color_vbo;
-	
 	setup_vbo(vbo, color_vbo);
-
-	GLuint vao;
 	
+	GLuint vao;
 	setup_vao(vao);
 
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
-    // Define camera parameters
-    vec3 camera_pos = {0.0f, 0.0f, 3.0f};
-    vec3 camera_target = {0.0f, 0.0f, 0.0f};
-    vec3 camera_up = {0.0f, 1.0f, 0.0f};
-
-    // Calculate view matrix using camera parameters
-    mat4 view_matrix;
-    glm_lookat(camera_pos, camera_target, camera_up, view_matrix);
-
-    // Set up camera uniform in shader
-    GLuint view_location = glGetUniformLocation(shader.ID, "view_matrix");
-    glUniformMatrix4fv(view_location, 1, GL_FALSE, (float*)view_matrix);
-
-    while (!glfwWindowShouldClose(window)) {
+       while (!glfwWindowShouldClose(window)) {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
