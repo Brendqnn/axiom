@@ -36,16 +36,17 @@ const char* vertex_shader =
     "    color = aColor;\n"
     "}\n";
 
-
 int main(void) {
     GLFWwindow* window;
 
+    printf("im tired xD");
+    
     if (!glfwInit()) {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
     
-    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "yo", NULL, NULL);
+    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "sup", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
@@ -68,30 +69,39 @@ int main(void) {
 
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
+    // Initialize matrices
     mat4 model, view, projection;
     glm_mat4_identity(model);
     glm_mat4_identity(view);
     glm_mat4_identity(projection);
-    glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
+
+    glm_perspective(glm_rad(25.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
+
     glm_translate(view, (vec3){0.0f, 0.0f, -5.0f});
 
     glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update the model matrix to rotate the pyramid
-        glm_rotate(model, glfwGetTime(), (vec3){0.0f, 1.0f, 0.0f});
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
+	// Update the model matrix to rotate the pyramid
+	glm_rotate(model, glfwGetTime() * 0.25f, (vec3){0.0f, 1.0f, 0.0f});
 
-        glUseProgram(shader.ID);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 18);
+	// Set the model, view, and projection matrices in the shader program
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+	// Draw the pyramid
+	glUseProgram(shader.ID);
+	glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLES, 0, 18);
+
+	// Swap buffers and poll events
+	glfwSwapBuffers(window);
+	glfwPollEvents();
     }
-    
+
     shader_destroy(&shader);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &color_vbo);
@@ -100,3 +110,4 @@ int main(void) {
     glfwTerminate();
     return 0;
 }
+
