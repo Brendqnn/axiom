@@ -41,7 +41,6 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time) 
         glm_vec3_scale(camera->front, camera->movement_speed * delta_time, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
-
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         vec3 movement;
         glm_vec3_scale(camera->front, camera->movement_speed * delta_time, movement);

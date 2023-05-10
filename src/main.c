@@ -7,7 +7,6 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 #include "gfx/shader.h"
-#include "gfx/vao.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -102,7 +101,6 @@ float colors[] = {
 };
 
 void setup_vbo(GLuint vbo, GLuint color_vbo) {
-
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -117,10 +115,14 @@ void setup_vbo(GLuint vbo, GLuint color_vbo) {
 
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(vertices)));
 
-
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     glEnableVertexAttribArray(1);
+}
+
+void setup_vao(GLuint vao) {
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 }
 
 int main(void) {
@@ -167,12 +169,12 @@ int main(void) {
     glm_translate(view, (vec3){0.0f, 0.0f, -5.0f});
 
     glEnable(GL_DEPTH_TEST);
-
+   
     while (!glfwWindowShouldClose(window)) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Update the model matrix to rotate the pyramid
-	glm_rotate(model, glfwGetTime() * 0.1f, (vec3){0.0f, 1.0f, 0.0f});
+	glm_rotate(model, 0.01f, (vec3){0.0f, 1.0f, 0.0f});
 
 	// Set the model, view, and projection matrices in the shader program
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
