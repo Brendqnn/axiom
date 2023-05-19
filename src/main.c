@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 #include "gfx/shader.h"
+#include "camera.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -125,6 +126,27 @@ void setup_vao(GLuint vao) {
     glBindVertexArray(vao);
 }
 
+double get_current_time() {
+    return glfwGetTime();
+}
+
+void calculate_fps(double frame_time) {
+    static double previous_time = 0.0;
+    static int frame_count = 0;
+
+    double current_time = get_current_time();
+    double elapsed_time = current_time - previous_time;
+    frame_count++;
+    
+    if (elapsed_time >= frame_time) {
+        double fps = frame_count / elapsed_time;
+        printf("FPS: %.2f\n", fps);
+        
+        frame_count = 0;
+        previous_time = current_time;
+    }
+}
+
 int main(void) {
     GLFWwindow* window;
 
@@ -169,26 +191,30 @@ int main(void) {
     glm_translate(view, (vec3){0.0f, 0.0f, -5.0f});
 
     glEnable(GL_DEPTH_TEST);
-   
+
+    double frame_time = 1.0;
+       
     while (!glfwWindowShouldClose(window)) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        calculate_fps(frame_time);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //camera_process_input(&camera, window, (float)delta_time);
+        
+        // Update the model matrix to rotate the pyramid
+        glm_rotate(model, 0.01f, (vec3){0.0f, 1.0f, 0.0f});
 
-	// Update the model matrix to rotate the pyramid
-	glm_rotate(model, 0.01f, (vec3){0.0f, 1.0f, 0.0f});
+        // Set the model, view, and projection matrices in the shader program
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-	// Set the model, view, and projection matrices in the shader program
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
+        // Draw the pyramid
+        glUseProgram(shader.ID);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 18);
 
-	// Draw the pyramid
-	glUseProgram(shader.ID);
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 18);
-
-	// Swap buffers and poll events
-	glfwSwapBuffers(window);
-	glfwPollEvents();
+        // Swap buffers and poll events
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
     shader_destroy(&shader);
