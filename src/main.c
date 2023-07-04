@@ -49,13 +49,13 @@ float vertices[] = {
 
 float colors[] = {
     // Front face
-    0.0f, 0.0f, 0.0f,      // Red
-    0.0f, 0.0f, 0.0f,      // Green
-    0.75f, 0.75f, 1.0f,   // Light Blue
+    0.0f, 0.0f, 0.75f, 
+    0.0f, 0.0f, 0.75f,      
+    0.0f, 0.0f, 0.75f,     
 
-    0.0f, 0.0f, 0.0f,      // Red
-    0.75f, 0.75f, 1.0f,   // Light Blue
-    1.0f, 1.0f, 1.0f      // White
+    0.0f, 0.0f, 0.75f,     
+    0.0f, 0.0f, 0.75f,    
+    0.0f, 0.0f, 0.75f       
 };
 
 void setup_vbo(GLuint* vbo, GLuint* color_vbo) {
@@ -133,6 +133,10 @@ int main() {
 
     Camera camera;
     camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 45.0f);
+
+    glfwSwapInterval(1); // Enable VSync
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     mat4 model, view, projection;
     glm_mat4_identity(model);
