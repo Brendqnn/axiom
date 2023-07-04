@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 #include "gfx/shader.h"
+
 #include "camera.h"
 
 #define WINDOW_WIDTH 1200
@@ -37,93 +38,47 @@ const char* vertex_shader =
 
 float vertices[] = {
     // Front face
-    0.0f, 1.0f, 0.0f,
-    -1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, 1.0f,
-
-    // Right face
-    0.0f, 1.0f, 0.0f,
-    1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, -1.0f,
-
-    // Back face
-    0.0f, 1.0f, 0.0f,
-    1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f, -1.0f,
-
-    // Left face
-    0.0f, 1.0f, 0.0f,
-    -1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f, 1.0f,
-
-    // Bottom face
-    -1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f, -1.0f,
-
-    // Top face
+    0.5f, 0.5f, 0.0f,
+    -0.5f, 0.5f, 0.0f,
     -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f
+
+    0.5f, 0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f
 };
 
 float colors[] = {
     // Front face
-    1.0f, 0.0f, 0.0f, // Red
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,      // Red
+    0.0f, 0.0f, 0.0f,      // Green
+    0.75f, 0.75f, 1.0f,   // Light Blue
 
-    // Right face
-    0.0f, 1.0f, 0.0f, // Green
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-
-    // Back face
-    0.0f, 0.0f, 1.0f, // Blue
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-
-    // Left face
-    1.0f, 1.0f, 0.0f, // Yellow
-    1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f,
-
-    // Bottom face
-    0.0f, 1.0f, 1.0f, // Cyan
-    0.0f, 1.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,
-
-    // Top face
-    1.0f, 0.0f, 1.0f, // Magenta
-    1.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 1.0f
+    0.0f, 0.0f, 0.0f,      // Red
+    0.75f, 0.75f, 1.0f,   // Light Blue
+    1.0f, 1.0f, 1.0f      // White
 };
 
-void setup_vbo(GLuint vbo, GLuint color_vbo) {
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+void setup_vbo(GLuint* vbo, GLuint* color_vbo) {
+    glGenBuffers(1, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glGenBuffers(1, color_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, *color_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+}
 
+void setup_vao(GLuint* vao, GLuint vbo, GLuint color_vbo) {
+    glGenVertexArrays(1, vao);
+    glBindVertexArray(*vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
 
-    glGenBuffers(1, &color_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, color_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(vertices)));
-
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
     glEnableVertexAttribArray(1);
-}
-
-void setup_vao(GLuint vao) {
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 }
 
 double get_current_time() {
@@ -137,35 +92,31 @@ void calculate_fps(double frame_time) {
     double current_time = get_current_time();
     double elapsed_time = current_time - previous_time;
     frame_count++;
-    
+
     if (elapsed_time >= frame_time) {
         double fps = frame_count / elapsed_time;
         printf("FPS: %.2f\n", fps);
-        
+
         frame_count = 0;
         previous_time = current_time;
     }
 }
 
-int main(void) {
-    GLFWwindow* window;
-
-    printf("im tired xD");
-    
+int main() {
     if (!glfwInit()) {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
-    
-    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "sup", NULL, NULL);
+
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Window", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
         return -1;
     }
-    
+
     glfwMakeContextCurrent(window);
-    
+
     if (glewInit() != GLEW_OK) {
         printf("Failed to initialize GLEW\n");
         glfwTerminate();
@@ -173,46 +124,59 @@ int main(void) {
     }
 
     GLuint vbo, color_vbo;
-    setup_vbo(vbo, color_vbo);
-	
+    setup_vbo(&vbo, &color_vbo);
+
     GLuint vao;
-    setup_vao(vao);
+    setup_vao(&vao, vbo, color_vbo);
 
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
-    // Initialize matrices
+    Camera camera;
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 45.0f);
+
     mat4 model, view, projection;
     glm_mat4_identity(model);
     glm_mat4_identity(view);
     glm_mat4_identity(projection);
 
-    glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
-
-    glm_translate(view, (vec3){0.0f, 0.0f, -5.0f});
+    glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
 
     glEnable(GL_DEPTH_TEST);
 
-    double frame_time = 1.0;
-       
+    double previous_time = glfwGetTime();
+    double frame_time = 1.0 / 60.0;
+
+    // Set the user pointer to pass the Camera pointer to the callback
+    glfwSetWindowUserPointer(window, &camera);
+
+    // Set the cursor position callback
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+
+    // Center the cursor initially
+    double center_x = WINDOW_WIDTH / 2;
+    double center_y = WINDOW_HEIGHT / 2;
+    glfwSetCursorPos(window, center_x, center_y);
+
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //camera_process_input(&camera, window, (float)delta_time);
-        
-        // Update the model matrix to rotate the pyramid
-        glm_rotate(model, 0.01f, (vec3){0.0f, 1.0f, 0.0f});
 
-        // Set the model, view, and projection matrices in the shader program
+        double current_time = glfwGetTime();
+        float delta_time = current_time - previous_time;
+        previous_time = current_time;
+
+        camera_update(&camera, window, delta_time);
+
+        camera_get_view_matrix(&camera, view);
+
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        // Draw the pyramid
         glUseProgram(shader.ID);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 18);
+        glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / (3 * sizeof(float)));
 
-        // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -225,6 +189,9 @@ int main(void) {
     glfwTerminate();
     return 0;
 }
+
+
+
 
 
 
