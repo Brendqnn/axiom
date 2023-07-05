@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
 src/gfx/stb_image.h
+/res
 
 # Object files
 *.o
