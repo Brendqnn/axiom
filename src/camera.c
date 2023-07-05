@@ -4,9 +4,9 @@
 #define PI 3.14159265358979323846
 #define CAMERA_SPEED 2.5f
 #define CAMERA_SENSITIVITY 0.1f
-#define WINDOW_WIDTH 1200
-#define WINDOW_HEIGHT 800
-#define CAMERA_FOV 45.0f
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 1080
+#define CAMERA_FOV 90.0f
 
 void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov) {
     glm_vec3_copy(position, camera->position);
