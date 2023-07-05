@@ -92,10 +92,9 @@ void calculate_fps(double frame_time) {
     double current_time = get_current_time();
     double elapsed_time = current_time - previous_time;
     frame_count++;
-
     if (elapsed_time >= frame_time) {
         double fps = frame_count / elapsed_time;
-        printf("FPS: %.2f\n", fps);
+        printf("FPS: %.0f\n", fps);
 
         frame_count = 0;
         previous_time = current_time;
@@ -129,6 +128,63 @@ int main() {
     GLuint vao;
     setup_vao(&vao, vbo, color_vbo);
 
+    float square_size = 1.0f;
+
+    // Calculate the number of squares in each row and column
+    int num_squares = 3;
+    int num_vertices = 6 * num_squares * num_squares;
+
+    // Calculate the total size of the vertex and color arrays
+    int vertices_size = 3 * num_vertices * sizeof(float);
+    int colors_size = 3 * num_vertices * sizeof(float);
+
+    // Allocate memory for the vertex and color arrays
+    float* vertices = (float*)malloc(vertices_size);
+    float* colors = (float*)malloc(colors_size);
+
+    // Fill the vertex and color arrays with positions and colors for each square
+    int vertex_index = 0;
+    int color_index = 0;
+
+    for (int row = 0; row < num_squares; row++) {
+        for (int col = 0; col < num_squares; col++) {
+            // Calculate the position of the current square
+            float x = col * square_size;
+            float y = 0.0f; // Set the y-coordinate as needed for the floor
+            float z = row * square_size;
+
+            // Define the vertices for the current square
+            float square_vertices[] = {
+                x, y, z,
+                x + square_size, y, z,
+                x + square_size, y, z + square_size,
+
+                x, y, z,
+                x + square_size, y, z + square_size,
+                x, y, z + square_size
+            };
+
+            // Define the color for the current square
+            float square_color[] = {
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f
+            };
+
+            // Copy the vertices and colors for the current square to the arrays
+            memcpy(vertices + vertex_index, square_vertices, sizeof(square_vertices));
+            memcpy(colors + color_index, square_color, sizeof(square_color));
+
+            // Update the indices for the next square
+            vertex_index += sizeof(square_vertices) / sizeof(float);
+            color_index += sizeof(square_color) / sizeof(float);
+        }
+    }
+
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
     Camera camera;
@@ -136,7 +192,7 @@ int main() {
 
     glfwSwapInterval(1); // Enable VSync
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disabled cursor
 
     mat4 model, view, projection;
     glm_mat4_identity(model);
@@ -161,6 +217,8 @@ int main() {
     double center_y = WINDOW_HEIGHT / 2;
     glfwSetCursorPos(window, center_x, center_y);
 
+    float outline_scale = 0.95f; // Adjust this value to control the thickness of the outline
+
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -169,17 +227,33 @@ int main() {
         float delta_time = current_time - previous_time;
         previous_time = current_time;
 
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices_size, vertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, color_vbo);
+        glBufferData(GL_ARRAY_BUFFER, colors_size, colors, GL_STATIC_DRAW);
+
         camera_update(&camera, window, delta_time);
 
         camera_get_view_matrix(&camera, view);
+
+        glUseProgram(shader.ID);
+        glBindVertexArray(vao);
 
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        glUseProgram(shader.ID);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / (3 * sizeof(float)));
+        // Enable wireframe mode
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        int numSquares = num_squares * num_squares; // Number of squares in the grid
+        for (int i = 0; i < numSquares; i++) {
+            glDrawArrays(GL_TRIANGLES, i * 6, 6);
+        }
+
+        // Disable wireframe mode and switch back to filling mode
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -193,6 +267,8 @@ int main() {
     glfwTerminate();
     return 0;
 }
+
+
 
 
 

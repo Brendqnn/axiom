@@ -113,14 +113,12 @@ void camera_get_view_matrix(Camera* camera, mat4 view_matrix) {
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
-    
+
     static bool firstMouse = true;
-    static double lastX = 0.0;
-    static double lastY = 0.0;
 
     if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
+        xpos = WINDOW_WIDTH / 2;
+        ypos = WINDOW_HEIGHT / 2;
         firstMouse = false;
     }
 
@@ -129,9 +127,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 
     double xoffset = xpos - center_x;
     double yoffset = center_y - ypos;  // Reversed since y-coordinates range from bottom to top
-
-    lastX = center_x;
-    lastY = center_y;
 
     float sensitivity = 0.1f;  // Adjust this to control mouse sensitivity
     xoffset *= sensitivity;
@@ -143,4 +138,5 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     // Set the cursor position back to the center of the window
     glfwSetCursorPos(window, center_x, center_y);
 }
+
 
