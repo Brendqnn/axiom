@@ -94,10 +94,11 @@ void calculate_fps(double frame_time) {
     frame_count++;
     if (elapsed_time >= frame_time) {
         double fps = frame_count / elapsed_time;
-        printf("FPS: %.0f\n", fps);
-
+        printf("FPS: %.0f\r", fps);  // Use \r to overwrite the current line
+        
         frame_count = 0;
         previous_time = current_time;
+        fflush(stdout);  // Flush the output to ensure it's displayed immediately
     }
 }
 
@@ -131,7 +132,7 @@ int main() {
     float square_size = 1.0f;
 
     // Calculate the number of squares in each row and column
-    int num_squares = 3;
+    int num_squares = 6;
     int num_vertices = 6 * num_squares * num_squares;
 
     // Calculate the total size of the vertex and color arrays
@@ -184,7 +185,7 @@ int main() {
             color_index += sizeof(square_color) / sizeof(float);
         }
     }
-
+    
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
     Camera camera;
@@ -245,7 +246,7 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
         // Enable wireframe mode
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         int numSquares = num_squares * num_squares; // Number of squares in the grid
         for (int i = 0; i < numSquares; i++) {
@@ -253,7 +254,7 @@ int main() {
         }
 
         // Disable wireframe mode and switch back to filling mode
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -263,7 +264,9 @@ int main() {
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &color_vbo);
     glDeleteVertexArrays(1, &vao);
-
+    free(vertices);
+    free(colors);
+        
     glfwTerminate();
     return 0;
 }
