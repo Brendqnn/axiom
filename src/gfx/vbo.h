@@ -1,8 +1,8 @@
 #ifndef VBO_H
 #define VBO_H
 
-#include < GLFW/glfw3.h>
-#include <GL/glew.h
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 typedef struct {
     GLuint id;
