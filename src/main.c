@@ -144,7 +144,6 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
-
     if (glewInit() != GLEW_OK) {
         printf("Failed to initialize GLEW\n");
         glfwTerminate();
@@ -152,8 +151,8 @@ int main() {
     }
     
     int width, height, channels;
-    const char *grass_texture_path = "res/grass.png";
-    const char *texture_data = stbi_load(grass_texture_path, &width, &height, &channels, 0);
+    unsigned char *grass_texture_path = "res/grass.png";
+    unsigned char *texture_data = stbi_load(grass_texture_path, &width, &height, &channels, 0);
     if (!texture_data) {
         printf("Failed to load texture: %s\n", grass_texture_path);
         glfwTerminate();
@@ -183,24 +182,21 @@ int main() {
     float square_size = 1.0f;
 
     // Calculate the number of squares in each row and column
-    int num_squares = 6;
+    int num_squares = 9;
     int num_vertices = 6 * num_squares * num_squares;
 
     // Calculate the total size of the vertex, color, and texcoord arrays
     int vertices_size = 3 * num_vertices * sizeof(float);
     int colors_size = 3 * num_vertices * sizeof(float);
-    int texcoords_size = 2 * num_vertices * sizeof(float);
-
+    
     // Allocate memory for the vertex, color, and texcoord arrays
     float* vertices = (float*)malloc(vertices_size);
     float* colors = (float*)malloc(colors_size);
-    float* texcoords = (float*)malloc(texcoords_size);
-
+    
     // Fill the vertex, color, and texcoord arrays with data for each square
     int vertex_index = 0;
     int color_index = 0;
-    int texcoord_index = 0;
-
+    
     for (int row = 0; row < num_squares; row++) {
         for (int col = 0; col < num_squares; col++) {
             // Calculate the position of the current square
@@ -229,35 +225,23 @@ int main() {
                 1.0f, 1.0f, 1.0f,
                 1.0f, 1.0f, 1.0f
             };
-
-            // Define the texture coordinates for the current square
-            float square_texcoords[] = {
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-
-                1.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f
-            };
-
+           
             // Copy the vertices, colors, and texcoords to the corresponding arrays
             memcpy(vertices + vertex_index, square_vertices, sizeof(square_vertices));
             memcpy(colors + color_index, square_color, sizeof(square_color));
-            memcpy(texcoords + texcoord_index, square_texcoords, sizeof(square_texcoords));
+            
 
             // Update the indices for the next square
             vertex_index += sizeof(square_vertices) / sizeof(float);
             color_index += sizeof(square_color) / sizeof(float);
-            texcoord_index += sizeof(square_texcoords) / sizeof(float);
+            
         }
     }
-
     
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
     Camera camera;
-    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 45.0f);
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 90.0f);
 
     glfwSwapInterval(1); // Enable VSync
 
@@ -285,8 +269,7 @@ int main() {
     double center_x = WINDOW_WIDTH / 2;
     double center_y = WINDOW_HEIGHT / 2;
     glfwSetCursorPos(window, center_x, center_y);
-     
-    
+         
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -312,8 +295,8 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
         int numSquares = num_squares * num_squares; // Number of squares in the grid
+                
         for (int i = 0; i < numSquares; i++) {
-            glBindTexture(GL_TEXTURE_2D, texture_id); // Bind the texture for each square
             glDrawArrays(GL_TRIANGLES, i * 6, 6);
         }
 
@@ -332,11 +315,3 @@ int main() {
     glfwTerminate();
     return 0;
 }
-
-
-
-
-
-
-
-
