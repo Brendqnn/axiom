@@ -10,15 +10,19 @@
 #include "vbo.h"
 #include "vao.h"
 
+#include "camera.h"
+
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 1080
 
 const char* vertex_shader =
     "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
     "void main()\n"
     "{\n"
-    "    gl_Position = vec4(aPos, 1.0);\n"
+    "    gl_Position = projection * view * vec4(aPos, 1.0);\n"
     "}\n";
 
 const char* fragment_shader =
@@ -93,16 +97,39 @@ int main() {
     
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
+    Camera camera;
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 90.0f);
+
     glfwSwapInterval(1); // Enable VSync
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disabled cursor
+
+    mat4 model, view, projection;
+    glm_mat4_identity(model);
+    glm_mat4_identity(view);
+    glm_mat4_identity(projection);
+
+    glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
 
     glEnable(GL_DEPTH_TEST);
 
     double previous_time = glfwGetTime();
     double frame_time = 1.0 / 60.0;
 
-    // Main rendering loop
+    // Set the user pointer to pass the Camera pointer to the callback
+    glfwSetWindowUserPointer(window, &camera);
+
+    // Set the cursor position callback
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+
+    // Center the cursor initially
+    double center_x = WINDOW_WIDTH / 2;
+    double center_y = WINDOW_HEIGHT / 2;
+    glfwSetCursorPos(window, center_x, center_y);
+
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
+
         // Clear the color buffer and depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -110,15 +137,26 @@ int main() {
         float delta_time = current_time - previous_time;
         previous_time = current_time;
 
+        // Process input
+        camera_update(&camera, window, delta_time);
+
+        // Calculate the view matrix
+        mat4 view;
+        camera_get_view_matrix(&camera, view);
+
         // Use the shader program
         glUseProgram(shader.ID);
 
         // Bind the VAO
         vao_bind(vao);
 
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
+
         // Draw the square
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        
+
         // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
