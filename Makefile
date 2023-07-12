@@ -1,9 +1,8 @@
-# Define the compiler and linker flags
-CFLAGS = -Wall -g -Icglm/include
+
+CFLAGS = -Wall -O3 -g -Icglm/include
 LDFLAGS = -lglfw -lGLEW -lGL -lm
 RUN_COMMAND = bin/debug/main.exe
 
-# Set environment variables for include and lib paths
 SOURCES = src/*.c
 EXECUTABLE = main.exe
 

@@ -2,11 +2,11 @@
 #include <math.h>
 
 #define PI 3.14159265358979323846
-#define CAMERA_SPEED 2.5f
+#define CAMERA_SPEED 0.2f
 #define CAMERA_SENSITIVITY 0.1f
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
-#define CAMERA_FOV 90.0f
+#define CAMERA_FOV 60.0f
 
 void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov) {
     glm_vec3_copy(position, camera->position);
@@ -55,6 +55,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time) 
         glm_vec3_scale(camera->front, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
+	
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         vec3 movement;
         glm_vec3_scale(camera->front, velocity, movement);
@@ -72,10 +73,6 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time) 
         glm_vec3_scale(camera->right, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
-
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		exit(1);
-	}
 
 }
 
@@ -133,7 +130,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     double xoffset = xpos - center_x;
     double yoffset = center_y - ypos;  // Reversed since y-coordinates range from bottom to top
 
-    float sensitivity = 0.1f;  // Adjust this to control mouse sensitivity
+    float sensitivity = 0.2f;  // Adjust this to control mouse sensitivity
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 

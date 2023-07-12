@@ -6,9 +6,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
-#include "shader.h"
-#include "vbo.h"
-#include "vao.h"
+#include "gfx/shader.h"
+#include "gfx/vbo.h"
+#include "gfx/vao.h"
 
 #include "camera.h"
 
@@ -69,27 +69,23 @@ int main() {
         glfwTerminate();
         return -1;
     }
-
-    // Calculate the number of squares in each row and column
-    int num_squares = 3;
+    
+    int num_squares = 24;
     int num_vertices = 6 * num_squares * num_squares;
-
-    // Calculate the total size of the vertex array
+    
     int vertices_size = 3 * num_vertices * sizeof(float);
-
-    // Allocate memory for the vertex array
+	printf("%d\n", vertices_size);
     float* vertices = (float*)malloc(vertices_size);
-
+    
     // Fill the vertex array with positions for each square
     int vertex_index = 0;
-    float square_size = 1.0f;
-    float spacing = 0.0f;
-
+    float square_size = 0.1f;
+    
     for (int row = 0; row < num_squares; row++) {
         for (int col = 0; col < num_squares; col++) {
-            float x = col * (square_size + spacing);
+            float x = col * square_size;
             float y = 0.0f; // Set the y-coordinate as needed for the floor
-            float z = row * (square_size + spacing);
+            float z = row * square_size;
 
             // Define the vertices for the current square
             float square_vertices[] = {
@@ -108,24 +104,20 @@ int main() {
             vertex_index += sizeof(square_vertices) / sizeof(float);
         }
     }
-
-    // Create VBO and VAO
+    
     struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
     struct VAO vao = vao_create();
-
-    // Create and bind the VBO
+   
     vbo_buffer(vbo, vertices, 0, vertices_size);
 
-    // Create the VAO
-    vao_bind(vao);
-
-    // Link the VBO and attribute pointers
+	vao_bind(vao);
+    
     vao_attr(vao, vbo, 0, 3, GL_FLOAT, 0, 0);
 
     Shader shader = shader_create(vertex_shader, fragment_shader);
 
     Camera camera;
-    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 90.0f);
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 60.0f);
 
     glfwSwapInterval(1); // Enable VSync
 
@@ -182,16 +174,23 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        // Draw the squares
-        glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+		glDrawArrays(GL_TRIANGLES, 0, num_vertices);
 
-        // Swap buffers and poll events
+		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+			shader_destroy(&shader);
+			vao_destroy(vao);
+			vbo_destroy(vbo);
+			exit(1);
+		} 
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    shader_destroy(&shader);
+	shader_destroy(&shader);
+	vao_destroy(vao);
+	vbo_destroy(vbo);
 
     glfwTerminate();
     return 0;
