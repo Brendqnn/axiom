@@ -4,7 +4,7 @@
 #define PI 3.14159265358979323846
 #define CAMERA_SPEED 2.5f
 #define CAMERA_SENSITIVITY 0.1f
-#define WINDOW_WIDTH 1600
+#define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 #define CAMERA_FOV 90.0f
 
@@ -72,6 +72,11 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time) 
         glm_vec3_scale(camera->right, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
+
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		exit(1);
+	}
+
 }
 
 void camera_process_mouse(Camera* camera, double x_offset, double y_offset) {
