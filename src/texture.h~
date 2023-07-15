@@ -9,5 +9,8 @@ typedef struct Texture {
 } Texture;
 
 Texture texture_load(const char *filename);
+void texture_bind(const Texture *texture, GLuint texture_unit);
+void texture_unbind(const Texture *texture);
+void texture_cleanup(Texture *texture);
 
 #endif // TEXTURE_H
