@@ -28,12 +28,12 @@ const char* vertex_shader =
     "uniform mat4 projection;\n"
     "out vec3 FragPos;\n"
     "out vec3 Normal;\n"
-    "out vec2 TexCoord;\n" // Add this line for texture coordinates
+    "out vec2 TexCoord;\n" 
     "void main()\n"
     "{\n"
     "    FragPos = vec3(model * vec4(aPos, 1.0));\n"
     "    Normal = mat3(transpose(inverse(model))) * aNormal;\n"
-    "    TexCoord = aTexCoord;\n" // Pass the texture coordinates to the fragment shader
+    "    TexCoord = aTexCoord;\n" 
     "    gl_Position = projection * view * vec4(FragPos, 1.0);\n"
     "}\n";
 
@@ -41,14 +41,14 @@ const char* fragment_shader =
     "#version 330 core\n"
     "in vec3 FragPos;\n"
     "in vec3 Normal;\n"
-    "in vec2 TexCoord;\n" // Add this line for texture coordinates
+    "in vec2 TexCoord;\n" 
     "out vec4 FragColor;\n"
-    "uniform sampler2D textureSampler;\n" // Add this line for the texture sampler
+    "uniform sampler2D textureSampler;\n" 
     "void main()\n"
     "{\n"
     "    vec3 lightDir = normalize(vec3(0.0, 1.0, 0.0));\n"
     "    float diff = max(dot(normalize(Normal), lightDir), 0.0);\n"
-    "    vec3 diffuse = diff * texture(textureSampler, TexCoord).rgb;\n" // Use texture coordinates to sample the texture
+    "    vec3 diffuse = diff * texture(textureSampler, TexCoord).rgb;\n" 
     "    FragColor = vec4(diffuse, 1.0);\n"
     "}\n";
 
@@ -61,11 +61,10 @@ void calculate_fps(double frame_time) {
     frame_count++;
     if (elapsed_time >= frame_time) {
         double fps = frame_count / elapsed_time;
-        printf("FPS: %.00f\r", fps);  // Use \r to overwrite the current line
-
+        printf("FPS: %.00f\r", fps);  
         frame_count = 0;
         previous_time = current_time;
-        fflush(stdout);  // Flush the output to ensure it's displayed immediately
+        fflush(stdout);  
     }
 }
 
@@ -81,16 +80,13 @@ void processMesh(const struct aiMesh* mesh, const struct aiScene* scene, struct 
         vertices[i * 3 + 1] = pos.y;
         vertices[i * 3 + 2] = pos.z;
     }
-
-    // Buffer vertex positions to VBO
+    
     vbo_bind(vbo);
     vbo_buffer(vbo, vertices, vertices_size, GL_STATIC_DRAW);
-
-    // Set up vertex attributes in VAO
+    
     vao_bind(vao);
     vao_attr(vao, vbo, 0, 3, GL_FLOAT, 0, 0);
 
-    // Free allocated memory
     free(vertices);
 }
 
@@ -184,11 +180,11 @@ int main() {
     int num_vertices = 0;
     loadModel("res/cherry/source/cherry.blend", &vao, &vbo, &num_vertices);
 
-	Texture texture = texture_load("res/cherry/textures/cherry_Color.png", true);
-	if (texture.id == 0) {
-	  // Handle texture loading error
-	  printf("Failed to load texture\n");
-	}
+    Texture texture = texture_load("res/cherry/textures/cherry_Color.png", true);
+    if (texture.id == 0) {
+        // Handle texture loading error
+        printf("Failed to load texture\n");
+    }
  
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
@@ -209,13 +205,13 @@ int main() {
         glUseProgram(shader.ID);
         vao_bind(vao);
 
-		glm_mat4_identity(model);
+        glm_mat4_identity(model);
 
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-		texture_bind(&texture, 0);
+        texture_bind(&texture, 0);
 
         glDrawArrays(GL_TRIANGLES, 0, num_vertices);
 		
