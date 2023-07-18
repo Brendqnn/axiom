@@ -6,7 +6,7 @@
 #define CAMERA_SENSITIVITY 0.1f
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
-#define CAMERA_FOV 45.0f
+#define CAMERA_FOV 60.0f
 
 void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov) {
     glm_vec3_copy(position, camera->position);
@@ -130,7 +130,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     double xoffset = xpos - center_x;
     double yoffset = center_y - ypos;  // Reversed since y-coordinates range from bottom to top
 
-    float sensitivity = 0.2f;  // Adjust this to control mouse sensitivity
+    float sensitivity = 0.1f;  // Adjust this to control mouse sensitivity
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -140,5 +140,4 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     // Set the cursor position back to the center of the window
     glfwSetCursorPos(window, center_x, center_y);
 }
-
 

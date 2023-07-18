@@ -17,10 +17,12 @@ typedef struct Renderer {
     int vertex_count;
     int index_count;
     Texture texture;
+    mat4 model, view, projection;
 } Renderer;
 
-void renderer_init(Renderer* renderer, const char* vertex_shader_path, const char* fragment_shader_path);
-void renderer_render(Renderer* renderer);
+void renderer_init(Renderer* renderer, const char* vertex_shader_path, const char* fragment_shader_path, GLFWwindow *window);
+void renderer_render(Renderer* renderer, GLFWwindow *window);
+void renderer_destroy(Renderer* renderer);
 
 #endif // RENDERER_H
 

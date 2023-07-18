@@ -12,6 +12,24 @@
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 
+const char* vertex_shader_src =
+    "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "uniform mat4 model;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
+    "void main() {\n"
+    "    gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+    "}\n";
+
+const char* fragment_shader_src =
+    "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main() {\n"
+    "    FragColor = vec4(1.0, 0.5, 0.2, 1.0); // Orange color\n"
+    "}\n";
+
+
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
     static int frame_count = 0;
@@ -47,41 +65,34 @@ int main() {
         glfwTerminate();
         return -1;
     }
-
-    glfwSwapInterval(1); // Enable VSync
-
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disable cursor
-
-    glEnable(GL_DEPTH_TEST);
     
-    //glfwSetWindowUserPointer(window, &renderer.camera);
-    //glfwSetCursorPosCallback(window, cursor_position_callback);
+    Renderer renderer;
+    renderer_init(&renderer, vertex_shader_src, fragment_shader_src, window);
 
-    // Center the cursor initially
-    //double center_x = WINDOW_WIDTH / 2;
-    //double center_y = WINDOW_HEIGHT / 2;
-    //glfwSetCursorPos(window, center_x, center_y);
-
+    double previous_time = glfwGetTime();
+    double frame_time = 1.0 / 60.0;
+    
     while (!glfwWindowShouldClose(window)) {
-        
+        calculate_fps(frame_time);
         // Clear the color buffer and depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-       
-              
-        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            
-            glfwTerminate();
-            exit(1);
-        }
 
+        renderer_render(&renderer, window);
+
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, true);
+        }
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
+        frame_time = glfwGetTime() - previous_time;
     }
 
-
+    renderer_destroy(&renderer);
     glfwTerminate();
     return 0;
 }
+
 
 
 
