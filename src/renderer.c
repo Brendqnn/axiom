@@ -24,33 +24,38 @@ void renderer_init(Renderer* renderer, const char* vertex_shader_src, const char
     glfwSwapInterval(1); // Enable VSync
     glEnable(GL_DEPTH_TEST);
 
-    float vertices[] = {
-        // Positions
-        -0.5f, -0.5f, 0.0f, // Bottom-left
-        0.5f, -0.5f, 0.0f,  // Bottom-right
-        0.5f, 0.5f, 0.0f,   // Top-right
+    GLfloat vertices[] =
+	{
+		-0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
+		0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
+		0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
+		-0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
+		0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
+		0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
+	};
 
-        0.5f, 0.5f, 0.0f,   // Top-right
-        -0.5f, 0.5f, 0.0f,  // Top-left
-        -0.5f, -0.5f, 0.0f   // Bottom-left
+    // Indices for vertices order
+    GLuint indices[] =
+    {
+        0, 3, 5, // Lower left triangle
+        3, 2, 4, // Lower right triangle
+        5, 4, 1 // Upper triangle
     };
 
-   
     renderer->vao = vao_create();
     renderer->vbo = vbo_create(GL_ARRAY_BUFFER, false);
-    //renderer->ibo = ibo_create();
+    renderer->ibo = ibo_create();
 
     vao_bind(renderer->vao);
 
     vbo_buffer(renderer->vbo, vertices, 0, sizeof(vertices));
     vao_attr(renderer->vao, renderer->vbo, 0, 3, GL_FLOAT, 0, 0);
-   
-    renderer->vertex_count = 6; // 6 vertices for two triangles (square)
-    renderer->index_count = 0;  // 6 indices for two triangles (square)
+
+    ibo_buffer(renderer->ibo, indices, sizeof(indices), GL_STATIC_DRAW);
+    renderer->index_count = sizeof(indices) / sizeof(GLuint);
 }
 
-
-void renderer_render(Renderer* renderer, GLFWwindow *window) {
+void renderer_render(Renderer* renderer, GLFWwindow* window) {
     static double previous_time = 0.0;
     double current_time = glfwGetTime();
     float delta_time = current_time - previous_time;
@@ -63,17 +68,18 @@ void renderer_render(Renderer* renderer, GLFWwindow *window) {
     camera_get_view_matrix(&renderer->camera, renderer->view);
 
     glUseProgram(renderer->shader.ID);
-    vao_bind(renderer->vao);
 
-    //glm_mat4_identity(renderer->model);
-
+    // Set the model, view, and projection matrices
     glUniformMatrix4fv(glGetUniformLocation(renderer->shader.ID, "model"), 1, GL_FALSE, (float*)renderer->model);
     glUniformMatrix4fv(glGetUniformLocation(renderer->shader.ID, "view"), 1, GL_FALSE, (float*)renderer->view);
     glUniformMatrix4fv(glGetUniformLocation(renderer->shader.ID, "projection"), 1, GL_FALSE, (float*)renderer->projection);
 
-    //texture_bind(&renderer->texture, 0);
+    // Bind the VAO with the IBO (since we're using an IBO to specify the vertex indices)
+    vao_bind(renderer->vao);
+    ibo_bind(renderer->ibo);
 
-    glDrawArrays(GL_TRIANGLES, 0, renderer->vertex_count);
+    // Draw the triangles using the IBO (by specifying the number of indices in the index array)
+    glDrawElements(GL_TRIANGLES, renderer->index_count, GL_UNSIGNED_INT, 0);
 }
 
 void renderer_destroy(Renderer *renderer) {
@@ -83,4 +89,3 @@ void renderer_destroy(Renderer *renderer) {
     texture_unbind(&renderer->texture);
     texture_cleanup(&renderer->texture);
 }
-

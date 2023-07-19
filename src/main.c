@@ -74,9 +74,7 @@ int main() {
     
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
-        // Clear the color buffer and depth buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
         renderer_render(&renderer, window);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -92,7 +90,6 @@ int main() {
     glfwTerminate();
     return 0;
 }
-
 
 
 

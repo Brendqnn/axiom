@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "gfx/stb_image.h"
 
+
 Texture texture_load(const char* filename, bool enable_asf) {
     Texture texture;
     memset(&texture, 0, sizeof(Texture));

@@ -1,6 +1,6 @@
 
 CFLAGS = -Wall -O3 -g -Icglm/include
-LDFLAGS = -lglfw -lGLEW -lGL -lm 
+LDFLAGS = -lglfw -lGLEW -lGL -lm -lassimp
 RUN_COMMAND = bin/debug/main.exe
 
 SOURCES = src/*.c
