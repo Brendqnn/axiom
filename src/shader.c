@@ -1,4 +1,6 @@
 #include "shader.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 
 static void check_compile_errors(GLuint shader, char *type) {
@@ -27,8 +29,53 @@ static void check_compile_errors(GLuint shader, char *type) {
     }
 }
 
-Shader shader_create(const char *vs_src, const char *fs_src) {
+char* read_shader_source(const char* file_path) {
+    FILE* file = fopen(file_path, "r");
+    if (!file) {
+        printf("Failed to open shader file: %s\n", file_path);
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* buffer = (char*)malloc(length + 1);
+    if (!buffer) {
+        printf("Failed to allocate memory for shader source.\n");
+        fclose(file);
+        return NULL;
+    }
+
+    // Check if all data was read correctly
+    size_t bytes_read = fread(buffer, 1, length, file);
+    if (bytes_read != (size_t)length) {
+        printf("Failed to read shader source from file: %s\n", file_path);
+        fclose(file);
+        free(buffer);
+        return NULL;
+    }
+
+    buffer[length] = '\0';
+
+    fclose(file);
+    return buffer;
+}
+
+Shader shader_create(const char* vertex_shader_path, const char* fragment_shader_path) {
     Shader self;
+
+    // Read shader sources from file
+    const char* vs_src = read_shader_source(vertex_shader_path);
+    const char* fs_src = read_shader_source(fragment_shader_path);
+
+    if (!vs_src || !fs_src) {
+        // Handle error, e.g., display an error message and exit the program.
+        if (vs_src) free((void*)vs_src);
+        if (fs_src) free((void*)fs_src);
+        Shader empty_shader = { 0 };
+        return empty_shader;
+    }
 
     // vertex shader
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -49,13 +96,19 @@ Shader shader_create(const char *vs_src, const char *fs_src) {
     glLinkProgram(self.ID);
     check_compile_errors(self.ID, "PROGRAM");
 
+    // Free the allocated shader sources after creating the shader
+    free((void*)vs_src);
+    free((void*)fs_src);
+
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
     return self;
 }
 
+
+
 void shader_destroy(Shader *shader) {
     glDeleteProgram(shader->ID);
-	shader->ID = 0;
+    shader->ID = 0;
 }

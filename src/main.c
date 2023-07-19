@@ -12,23 +12,6 @@
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 
-const char* vertex_shader_src =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "uniform mat4 model;\n"
-    "uniform mat4 view;\n"
-    "uniform mat4 projection;\n"
-    "void main() {\n"
-    "    gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-    "}\n";
-
-const char* fragment_shader_src =
-    "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main() {\n"
-    "    FragColor = vec4(1.0, 0.5, 0.2, 1.0); // Orange color\n"
-    "}\n";
-
 
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
@@ -37,7 +20,7 @@ void calculate_fps(double frame_time) {
     double current_time = glfwGetTime();
     double elapsed_time = current_time - previous_time;
     frame_count++;
-    if (elapsed_time >= frame_time) {
+    if (elapsed_time >= 1.0) {
         double fps = frame_count / elapsed_time;
         printf("FPS: %.00f\r", fps);
         frame_count = 0;
@@ -65,10 +48,11 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    
-    Renderer renderer;
-    renderer_init(&renderer, vertex_shader_src, fragment_shader_src, window);
+   
 
+    Renderer renderer;
+    renderer_init(&renderer, "default.vert", "default.frag", window);
+    
     double previous_time = glfwGetTime();
     double frame_time = 1.0 / 60.0;
     
@@ -90,7 +74,6 @@ int main() {
     glfwTerminate();
     return 0;
 }
-
 
 
 
