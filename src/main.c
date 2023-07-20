@@ -7,11 +7,15 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
-#include "renderer.h"
+#include "camera.h"
+#include "shader.h"
+#include "vao.h"
+#include "vbo.h"
+#include "ibo.h"
+
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
-
 
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
@@ -34,47 +38,113 @@ int main() {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
-
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Window", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
         return -1;
     }
-
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
         printf("Failed to initialize GLEW\n");
         glfwTerminate();
         return -1;
     }
-   
 
-    Renderer renderer;
-    renderer_init(&renderer, "default.vert", "default.frag", window);
+     GLfloat vertices[] =
+	{
+		-0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
+		0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
+		0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
+		-0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
+		0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
+		0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
+	};
+
+    // Indices for vertices order
+    GLuint indices[] =
+    {
+        0, 3, 5, // Lower left triangle
+        3, 2, 4, // Lower right triangle
+        5, 4, 1 // Upper triangle
+    };
     
+    struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
+    struct VAO vao = vao_create();
+    struct IBO ibo = ibo_create();
+    
+    vao_bind(vao);
+
+    vbo_buffer(vbo, vertices, 0, sizeof(vertices));
+    vao_attr(vao, vbo, 0, 3, GL_FLOAT, 0, 0);
+
+    ibo_buffer(ibo, indices, sizeof(indices), GL_STATIC_DRAW);
+    int index_count = sizeof(indices) / sizeof(GLuint);
+    
+    Shader shader = shader_create("default.vert", "default.frag");
+    
+    Camera camera;
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 60.0f);
+
+    glEnable(GL_DEPTH_TEST);
+    glfwSwapInterval(1); // Enable VSync
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disable cursor
+    
+    mat4 model, view, projection;
+    glm_mat4_identity(model);
+    glm_mat4_identity(view);
+    glm_mat4_identity(projection);
+    
+    glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
+        
     double previous_time = glfwGetTime();
     double frame_time = 1.0 / 60.0;
     
+    glfwSetWindowUserPointer(window, &camera);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    // Center the cursor initially
+    double center_x = WINDOW_WIDTH / 2;
+    double center_y = WINDOW_HEIGHT / 2;
+    glfwSetCursorPos(window, center_x, center_y);
+         
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
+        // Clear the color buffer and depth buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+        double current_time = glfwGetTime();
+        float delta_time = current_time - previous_time;
+        previous_time = current_time;
+        // Process input
+        camera_update(&camera, window, delta_time);
         
-        renderer_render(&renderer, window);
+        camera_get_view_matrix(&camera, view);
+        glUseProgram(shader.ID);
+                
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
+
+        vao_bind(vao);
+        ibo_bind(ibo);
+        
+        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, true);
+            shader_destroy(&shader);
+            vao_destroy(vao);
+            vbo_destroy(vbo);
+            exit(1);
         }
-        
         glfwSwapBuffers(window);
         glfwPollEvents();
-        frame_time = glfwGetTime() - previous_time;
     }
-
-    renderer_destroy(&renderer);
+    shader_destroy(&shader);
+    vao_destroy(vao);
+    vbo_destroy(vbo);
     glfwTerminate();
     return 0;
 }
-
 
 
 
