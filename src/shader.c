@@ -106,8 +106,6 @@ Shader shader_create(const char* vertex_shader_path, const char* fragment_shader
     return self;
 }
 
-
-
 void shader_destroy(Shader *shader) {
     glDeleteProgram(shader->ID);
     shader->ID = 0;

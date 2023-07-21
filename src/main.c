@@ -13,7 +13,6 @@
 #include "vbo.h"
 #include "ibo.h"
 
-
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 
@@ -51,23 +50,23 @@ int main() {
         return -1;
     }
 
-     GLfloat vertices[] =
-	{
-		-0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
-		0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
-		0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
-		-0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
-		0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
-		0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
-	};
+    GLfloat vertices[] =
+        {
+            -0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
+            0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
+            0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
+            -0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
+            0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
+            0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
+        };
 
     // Indices for vertices order
     GLuint indices[] =
-    {
-        0, 3, 5, // Lower left triangle
-        3, 2, 4, // Lower right triangle
-        5, 4, 1 // Upper triangle
-    };
+        {
+            0, 3, 5, // Lower left triangle
+            3, 2, 4, // Lower right triangle
+            5, 4, 1 // Upper triangle
+        };
     
     struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
     struct VAO vao = vao_create();
@@ -136,16 +135,17 @@ int main() {
             vbo_destroy(vbo);
             exit(1);
         }
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    
     shader_destroy(&shader);
     vao_destroy(vao);
     vbo_destroy(vbo);
     glfwTerminate();
     return 0;
 }
-
 
 
 
