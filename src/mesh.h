@@ -9,18 +9,15 @@
 typedef struct {
     float position[3];
     float normal[3];
-    float texCoords[2];
 } Vertex;
 
 typedef struct {
     Vertex* vertices;
     unsigned int* indices;
-    Texture* textures;
-
+    
     unsigned int num_vertices;
     unsigned int num_indices;
-    unsigned int num_textures;
-
+    
     // render data
     struct VAO vao = vao_create();
     struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
@@ -28,9 +25,8 @@ typedef struct {
         
 } Mesh;
 
-Mesh* create_mesh(Vertex* vertices, unsigned int* indices, Texture* textures,
-                 unsigned int numVertices, unsigned int numIndices, unsigned int numTextures);
-void draw(Shader &shader);
-void setup_mesh();
+Mesh* create_mesh(Vertex* vertices, unsigned int* indices, unsigned int num_vertices, unsigned int num_indices);                
+void draw();
+void mesh_destroy();
 
 #endif /* MESH_H */
