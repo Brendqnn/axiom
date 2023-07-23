@@ -16,7 +16,7 @@ Texture texture_load(const char* filename, bool enable_asf) {
         return texture;
     }
 
-    // Generate and bind texture object
+    // Generate and bind texture objectx
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_2D, texture.id);
 

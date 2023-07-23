@@ -9,9 +9,7 @@
 
 #include "camera.h"
 #include "shader.h"
-#include "vao.h"
-#include "vbo.h"
-#include "ibo.h"
+#include "model.h"
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
@@ -49,36 +47,6 @@ int main() {
         glfwTerminate();
         return -1;
     }
-
-    GLfloat vertices[] =
-        {
-            -0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
-            0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
-            0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
-            -0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
-            0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
-            0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
-        };
-
-    // Indices for vertices order
-    GLuint indices[] =
-        {
-            0, 3, 5, // Lower left triangle
-            3, 2, 4, // Lower right triangle
-            5, 4, 1 // Upper triangle
-        };
-    
-    struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
-    struct VAO vao = vao_create();
-    struct IBO ibo = ibo_create();
-    
-    vao_bind(vao);
-
-    vbo_buffer(vbo, vertices, 0, sizeof(vertices));
-    vao_attr(vao, vbo, 0, 3, GL_FLOAT, 0, 0);
-
-    ibo_buffer(ibo, indices, sizeof(indices), GL_STATIC_DRAW);
-    int index_count = sizeof(indices) / sizeof(GLuint);
     
     Shader shader = shader_create("default.vert", "default.frag");
     
@@ -95,54 +63,47 @@ int main() {
     glm_mat4_identity(projection);
     
     glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
-        
+
+    Model* tree = load_model("res/maple/source/tree2.blend");
+            
     double previous_time = glfwGetTime();
     double frame_time = 1.0 / 60.0;
     
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, cursor_position_callback);
-    // Center the cursor initially
+    
     double center_x = WINDOW_WIDTH / 2;
     double center_y = WINDOW_HEIGHT / 2;
     glfwSetCursorPos(window, center_x, center_y);
          
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
-        // Clear the color buffer and depth buffer
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
         previous_time = current_time;
-        // Process input
+
         camera_update(&camera, window, delta_time);
-        
+
         camera_get_view_matrix(&camera, view);
         glUseProgram(shader.ID);
-                
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        vao_bind(vao);
-        ibo_bind(ibo);
-        
-        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
+        draw_model(tree);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
-            vao_destroy(vao);
-            vbo_destroy(vbo);
             exit(1);
         }
-        
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
     
     shader_destroy(&shader);
-    vao_destroy(vao);
-    vbo_destroy(vbo);
+    model_destroy(tree);
     glfwTerminate();
     return 0;
 }

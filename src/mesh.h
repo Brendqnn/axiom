@@ -4,29 +4,31 @@
 #include "vao.h"
 #include "vbo.h"
 #include "ibo.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <cglm/cglm.h>
 
 
 typedef struct {
-    float position[3];
-    float normal[3];
+    vec3 position;
+    vec3 normal;
+    vec2 tex_coords; 
 } Vertex;
 
 typedef struct {
     Vertex* vertices;
     unsigned int* indices;
-    
     unsigned int num_vertices;
     unsigned int num_indices;
-    
-    // render data
-    struct VAO vao = vao_create();
-    struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
-    struct IBO ibo = ibo_create();
-        
+    struct VAO vao;
+    struct VBO vbo;
+    struct IBO ibo; 
 } Mesh;
 
-Mesh* create_mesh(Vertex* vertices, unsigned int* indices, unsigned int num_vertices, unsigned int num_indices);                
-void draw();
-void mesh_destroy();
+Mesh* setup_mesh(Vertex* vertices, unsigned int* indices, unsigned int num_vertices, unsigned int num_indices);
+void draw(Mesh* mesh);
+void mesh_destroy(Mesh* mesh);
 
 #endif /* MESH_H */
+
+

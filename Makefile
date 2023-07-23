@@ -1,18 +1,23 @@
-
-CFLAGS = -Wall -O3 -g -Icglm/include
+CFLAGS = -Wall -Icglm/include -g
 LDFLAGS = -lglfw -lGLEW -lGL -lm -lassimp
 RUN_COMMAND = bin/debug/main.exe
 
-SOURCES = src/*.c
-EXECUTABLE = main.exe
+SOURCES = $(wildcard src/*.c)
+OBJECTS = $(patsubst src/%.c, bin/debug/%.o, $(SOURCES))
+EXECUTABLE = bin/debug/main.exe
 
-all:
-	gcc -c -std=c11 $(SOURCES) $(CFLAGS) && \
-	gcc *.o -o bin/debug/$(EXECUTABLE) -s $(LDFLAGS) && $(RUN_COMMAND)
+all: $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	gcc $(OBJECTS) -o $(EXECUTABLE) $(LDFLAGS)
+
+bin/debug/%.o: src/%.c
+	gcc -c -std=c11 $(CFLAGS) $< -o $@
 
 clean:
-	rm -f bin/debug/$(EXECUTABLE) *.o
+	rm -f $(EXECUTABLE) $(OBJECTS)
 
-run:
+run: $(EXECUTABLE)
 	$(RUN_COMMAND)
+
 
