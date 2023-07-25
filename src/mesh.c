@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*  Functions  */
+
 struct Mesh* createMesh(struct Vertex* vertices, GLuint* indices, struct Texture* textures, int numVertices, int numIndices, int numTextures)
 {
     struct Mesh* mesh = (struct Mesh*)malloc(sizeof(struct Mesh));
@@ -20,7 +20,7 @@ struct Mesh* createMesh(struct Vertex* vertices, GLuint* indices, struct Texture
     return mesh;
 }
 
-void Draw(struct Mesh* mesh, GLuint shader)
+void Draw(struct Mesh* mesh, Shader shader)
 {
     // Bind appropriate textures
     GLuint diffuseNr = 1;
@@ -44,13 +44,16 @@ void Draw(struct Mesh* mesh, GLuint shader)
         }
 
         // Now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(shader, strcat(name, number)), i);
+        glUniform1i(glGetUniformLocation(shader.ID, strcat(name, number)), i);
         // And finally bind the texture
         glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
     }
+ 
+    glUniform1f(glGetUniformLocation(shader.ID, "material.shininess"), 16.0f);
+   
+    //glUseProgram(shader.ID);
 
-    // Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
-    glUniform1f(glGetUniformLocation(shader, "material.shininess"), 16.0f);
+    //glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)modelMatrix);
 
     // Draw mesh
     glBindVertexArray(mesh->VAO);
@@ -65,33 +68,29 @@ void Draw(struct Mesh* mesh, GLuint shader)
     }
 }
 
-/*  Render data  */
+
 void setupMesh(struct Mesh* mesh)
 {
-    // Create buffers/arrays
+    
     glGenVertexArrays(1, &(mesh->VAO));
     glGenBuffers(1, &(mesh->VBO));
     glGenBuffers(1, &(mesh->EBO));
 
     glBindVertexArray(mesh->VAO);
-    // Load data into vertex buffers
+    
     glBindBuffer(GL_ARRAY_BUFFER, mesh->VBO);
-    // A great thing about structs is that their memory layout is sequential for all its items.
-    // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-    // again translates to 3/2 floats which translates to a byte array.
+    
     glBufferData(GL_ARRAY_BUFFER, mesh->numVertices * sizeof(struct Vertex), mesh->vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->numIndices * sizeof(GLuint), mesh->indices, GL_STATIC_DRAW);
-
-    // Set the vertex attribute pointers
-    // Vertex Positions
+    
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)0);
-    // Vertex Normals
+    
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, Normal));
-    // Vertex Texture Coords
+    
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, TexCoords));
 

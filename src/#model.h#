@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <cglm/cglm.h>
 #include "mesh.h"
-#include "shader.h"
+#include "shader.hx"
 
 
 struct Model

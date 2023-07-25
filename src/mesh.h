@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 #include <cglm/cglm.h>
+#include "shader.h"
 
 struct Vertex
 {
@@ -30,7 +31,7 @@ struct Mesh
 };
 
 struct Mesh* createMesh(struct Vertex* vertices, GLuint* indices, struct Texture* textures, int numVertices, int numIndices, int numTextures);
-void Draw(struct Mesh* mesh, GLuint shader);
+void Draw(struct Mesh* mesh, Shader shader);
 void setupMesh(struct Mesh* mesh);
 
 #endif // MESH_H

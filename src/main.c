@@ -47,8 +47,10 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    
+       
     Shader shader = shader_create("default.vert", "default.frag");
+
+    struct Model* tree = loadModel("res/maple/source/tree2.blend");
     
     Camera camera;
     camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 60.0f);
@@ -63,8 +65,6 @@ int main() {
     glm_mat4_identity(projection);
     
     glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
-
-    //Model* tree = load_model("res/maple/source/tree2.blend");
             
     double previous_time = glfwGetTime();
     double frame_time = 1.0 / 60.0;
@@ -75,7 +75,8 @@ int main() {
     double center_x = WINDOW_WIDTH / 2;
     double center_y = WINDOW_HEIGHT / 2;
     glfwSetCursorPos(window, center_x, center_y);
-         
+
+        
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
         
@@ -89,8 +90,14 @@ int main() {
 
         camera_get_view_matrix(&camera, view);
         glUseProgram(shader.ID);
+        
+        // Set the uniform matrices in the shader
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*)view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (const GLfloat*)projection);
+        
 
-        //draw_model(tree);
+        drawModel(tree, shader);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
@@ -100,7 +107,6 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
     
     shader_destroy(&shader);
     //model_destroy(tree);
