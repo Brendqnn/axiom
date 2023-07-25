@@ -64,7 +64,7 @@ int main() {
     
     glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
 
-    Model* tree = load_model("res/maple/source/tree2.blend");
+    //Model* tree = load_model("res/maple/source/tree2.blend");
             
     double previous_time = glfwGetTime();
     double frame_time = 1.0 / 60.0;
@@ -90,7 +90,7 @@ int main() {
         camera_get_view_matrix(&camera, view);
         glUseProgram(shader.ID);
 
-        draw_model(tree);
+        //draw_model(tree);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
@@ -103,7 +103,7 @@ int main() {
 
     
     shader_destroy(&shader);
-    model_destroy(tree);
+    //model_destroy(tree);
     glfwTerminate();
     return 0;
 }

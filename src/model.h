@@ -1,18 +1,27 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <GL/glew.h>
+#include <cglm/cglm.h>
 #include "mesh.h"
 
-typedef struct {
-    Mesh* meshes; 
-    unsigned int num_meshes; 
-   
-} Model;
 
-Model* load_model(const char* model_path);
-void draw_model(Model* model);
-void model_destroy(Model* model);
+struct Model
+{
+    struct Mesh* meshes;
+    char* directory;
+    struct Texture* textures_loaded;
+    int numMeshes;
+};
 
-#endif /* MODEL_H */
+struct Model* createModel(const char* path);
+
+void DrawModel(struct Model* model, GLuint shader);
+
+void destroyModel(struct Model* model);
+
+#endif // MODEL_H
+
+
 
 
