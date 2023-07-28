@@ -9,10 +9,8 @@
 
 #include "camera.h"
 #include "shader.h"
-#include "model.h"
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+
 
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
@@ -21,6 +19,7 @@ void calculate_fps(double frame_time) {
     double current_time = glfwGetTime();
     double elapsed_time = current_time - previous_time;
     frame_count++;
+    
     if (elapsed_time >= 1.0) {
         double fps = frame_count / elapsed_time;
         printf("FPS: %.00f\r", fps);
@@ -35,6 +34,7 @@ int main() {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
+    
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Window", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
@@ -50,10 +50,9 @@ int main() {
        
     Shader shader = shader_create("default.vert", "default.frag");
 
-    struct Model* tree = loadModel("res/maple/source/tree2.blend");
-    
+        
     Camera camera;
-    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, 60.0f);
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV);
 
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1); // Enable VSync
@@ -76,6 +75,7 @@ int main() {
     double center_y = WINDOW_HEIGHT / 2;
     glfwSetCursorPos(window, center_x, center_y);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         
     while (!glfwWindowShouldClose(window)) {
         calculate_fps(frame_time);
@@ -96,9 +96,7 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (const GLfloat*)projection);
         
-
-        drawModel(tree, shader);
-
+        
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
             exit(1);
@@ -109,7 +107,6 @@ int main() {
     }
     
     shader_destroy(&shader);
-    //model_destroy(tree);
     glfwTerminate();
     return 0;
 }

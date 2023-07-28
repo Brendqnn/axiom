@@ -3,36 +3,27 @@
 
 #include <GL/glew.h>
 #include <cglm/cglm.h>
-#include "shader.h"
+#include "vao.h"
+#include "vbo.h"
+#include "ibo.h"
 
-struct Vertex
-{
+
+typedef struct Vertex { 
     vec3 Position;
     vec3 Normal;
     vec2 TexCoords;
-};
+} Vertex;
 
-struct Texture
-{
-    GLuint id;
-    char type[100];
-    char path[100];
-};
+typedef struct Mesh {
+    Vertex* vertices;
+    unsigned int *indices;
+    unsigned int num_vertices;
+    unsigned int num_indices;
+} Mesh;
 
-struct Mesh
-{
-    struct Vertex* vertices;
-    GLuint* indices;
-    struct Texture* textures;
-    int numVertices;
-    int numIndices;
-    int numTextures;
-    GLuint VAO, VBO, EBO;
-};
-
-struct Mesh* createMesh(struct Vertex* vertices, GLuint* indices, struct Texture* textures, int numVertices, int numIndices, int numTextures);
-void Draw(struct Mesh* mesh, Shader shader);
-void setupMesh(struct Mesh* mesh);
+Mesh* create_mesh(Vertex* vertices);
+void draw(Mesh* mesh);
+void setup_mesh(Mesh* mesh);
 
 #endif // MESH_H
 
