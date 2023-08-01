@@ -24,7 +24,7 @@ void vao_attr(
     // NOTE: glVertexAttribPointer will AUTO-CONVERT integer values to floating point.
     // Integer vertex attributes must be specified with glVertexAttribIPointer.
     // THIS IS EVIL. OpenGL is bad. Who designed this to fail silently?
-    // S/O jdah!!!!
+    // S/O jdh
     switch (type) {
         case GL_BYTE:
         case GL_UNSIGNED_BYTE:

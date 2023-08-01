@@ -30,15 +30,7 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
 }
 
 void camera_update(Camera* camera, GLFWwindow* window, float delta_time) {
-    // Update camera position based on user input
     camera_process_input(camera, window, delta_time);
-
-    // Update view matrix
-    mat4 view_matrix;
-    camera_get_view_matrix(camera, view_matrix);
-
-    // Set the view matrix in your rendering code
-    // glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, (float*)view_matrix);
 }
 
 void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time) {
@@ -122,16 +114,14 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     double center_y = WINDOW_HEIGHT / 2;
 
     double xoffset = xpos - center_x;
-    double yoffset = center_y - ypos;  // Reversed since y-coordinates range from bottom to top
+    double yoffset = center_y - ypos;
 
-    float sensitivity = 0.1f;  // Adjust this to control mouse sensitivity
+    float sensitivity = 0.1f;
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
-    // Update the camera's orientation based on the mouse movement
     camera_process_mouse(camera, xoffset, yoffset);
-
-    // Set the cursor position back to the center of the window
+    
     glfwSetCursorPos(window, center_x, center_y);
 }
 
