@@ -16,7 +16,6 @@ void setup_block(Block *block, float block_size, int num_squares) {
             float y = 0.0f; // Set the base y-coordinate for the cube (bottom face)
             float z = row * cube_size;
 
-            // Define the vertices for the current cube
             float cube_vertices[] = {
                 // Front face
                 x, y, z,
@@ -67,22 +66,18 @@ void setup_block(Block *block, float block_size, int num_squares) {
                 x, y, z
             };
 
-            // Copy the vertices for the current cube to the array
             memcpy(block->vertices + vertex_index, cube_vertices, sizeof(cube_vertices));
 
-            // Update the indices for the next cube
             vertex_index += sizeof(cube_vertices) / sizeof(float);
         }
     }
 
-    // Create and bind the VAO, VBO
     block->vao = vao_create();
     block->vbo = vbo_create(GL_ARRAY_BUFFER, false);
 
     vao_bind(block->vao);
     vbo_buffer(block->vbo, block->vertices, 0, sizeof(float) * vertex_index);
-
-    // Set up attribute pointers for position data
+   
     vao_attr(block->vao, block->vbo, 0, 3, GL_FLOAT, 0, 0); // Position attribute
 
     // Store the number of vertices
