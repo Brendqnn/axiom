@@ -22,7 +22,7 @@ void setup_block(Block *block, float block_size, int num_squares) {
                 x, y, z,
                 x + cube_size, y, z,
                 x + cube_size, y + cube_size, z,
-                x, y, z,
+                x, y, z,x
                 x + cube_size, y + cube_size, z,
                 x, y + cube_size, z,
 

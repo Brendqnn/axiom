@@ -12,6 +12,9 @@
 #include "block.h"
 #include "texture.h"
 
+#define GRID_SIZE_X 3
+#define GRID_SIZE_Z 3
+
 
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
@@ -78,11 +81,8 @@ int main() {
     glfwSwapInterval(1);
 
     Block block;
-
-    setup_block(&block);
-
-    //Texture texture = texture_load("res/dirt.png", true);
-            
+    setup_block(&block, 1.0f, 9); // You can change the block size here
+               
     while (!glfwWindowShouldClose(window)) {
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
