@@ -12,10 +12,6 @@
 #include "block.h"
 #include "texture.h"
 
-#define GRID_SIZE_X 3
-#define GRID_SIZE_Z 3
-
-
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
     static int frame_count = 0;
@@ -79,9 +75,11 @@ int main() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
-
+    
     Block block;
-    setup_block(&block, 1.0f, 9); // You can change the block size here
+    setup_block(&block, 1.0f);
+    
+    //generate_visible_blocks(&camera, &block);
                
     while (!glfwWindowShouldClose(window)) {
         double current_time = glfwGetTime();

@@ -1,96 +1,81 @@
 #include "block.h"
-#include <string.h>
-#include <math.h>
+#include "string.h"
 
-void setup_block(Block *block, float block_size, int num_squares) {
-    float cube_size = block_size / num_squares;
-    int num_vertices = 36 * num_squares * num_squares; // 36 vertices per cube
 
-    // Fill the vertices array with positions for each cube
-    int vertex_index = 0;
+void setup_block(Block *block, float block_size)
+{
+    float cube_vertices[] = {
+        // Front face
+        -0.5f, -0.5f, 0.5f,
+        0.5f, -0.5f, 0.5f,
+        0.5f,  0.5f, 0.5f,
+        -0.5f,  0.5f, 0.5f,
 
-    for (int row = 0; row < num_squares; row++) {
-        for (int col = 0; col < num_squares; col++) {
-            // Calculate the position of the current cube
-            float x = col * cube_size;
-            float y = 0.0f; // Set the base y-coordinate for the cube (bottom face)
-            float z = row * cube_size;
+        // Back face
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f,
+        0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+    };
 
-            float cube_vertices[] = {
-                // Front face
-                x, y, z,
-                x + cube_size, y, z,
-                x + cube_size, y + cube_size, z,
-                x, y, z,
-                x + cube_size, y + cube_size, z,
-                x, y + cube_size, z,
+    unsigned int cube_indices[] = {
+        0, 1, 2,  
+        2, 3, 0,
+        4, 5, 6,
+        6, 7, 4,
+        1, 5, 6,
+        6, 2, 1,
+        0, 4, 7,
+        7, 3, 0,
+        3, 2, 6,
+        6, 7, 3,
+        0, 1, 5,
+        5, 4, 0
+    };
 
-                // Right face
-                x + cube_size, y, z,
-                x + cube_size, y, z + cube_size,
-                x + cube_size, y + cube_size, z + cube_size,
-                x + cube_size, y, z,
-                x + cube_size, y + cube_size, z + cube_size,
-                x + cube_size, y + cube_size, z,
-
-                // Back face
-                x + cube_size, y, z + cube_size,
-                x, y, z + cube_size,
-                x, y + cube_size, z + cube_size,
-                x + cube_size, y, z + cube_size,
-                x, y + cube_size, z + cube_size,
-                x + cube_size, y + cube_size, z + cube_size,
-
-                // Left face
-                x, y, z + cube_size,
-                x, y, z,
-                x, y + cube_size, z,
-                x, y, z + cube_size,
-                x, y + cube_size, z,
-                x, y + cube_size, z + cube_size,
-
-                // Top face
-                x, y + cube_size, z,
-                x + cube_size, y + cube_size, z,
-                x + cube_size, y + cube_size, z + cube_size,
-                x, y + cube_size, z,
-                x + cube_size, y + cube_size, z + cube_size,
-                x, y + cube_size, z + cube_size,
-
-                // Bottom face
-                x, y, z + cube_size,
-                x + cube_size, y, z + cube_size,
-                x + cube_size, y, z,
-                x, y, z + cube_size,
-                x + cube_size, y, z,
-                x, y, z
-            };
-
-            memcpy(block->vertices + vertex_index, cube_vertices, sizeof(cube_vertices));
-
-            vertex_index += sizeof(cube_vertices) / sizeof(float);
-        }
-    }
-
+    // Create and bind the VAO
     block->vao = vao_create();
-    block->vbo = vbo_create(GL_ARRAY_BUFFER, false);
-
     vao_bind(block->vao);
-    vbo_buffer(block->vbo, block->vertices, 0, sizeof(float) * vertex_index);
-   
-    vao_attr(block->vao, block->vbo, 0, 3, GL_FLOAT, 0, 0); // Position attribute
 
-    // Store the number of vertices
-    block->num_vertices = num_vertices;
-    block->block_size = block_size;
+    // Create and bind the VBO for vertices
+    block->vbo = vbo_create(GL_ARRAY_BUFFER, false);
+    vbo_bind(block->vbo);
+    vbo_buffer(block->vbo, cube_vertices, 0, sizeof(cube_vertices));
+
+    // Create and bind the EBO for indices
+    block->ebo = ebo_create();
+    ebo_bind(block->ebo);
+    ebo_buffer(block->ebo, cube_indices, sizeof(cube_indices), GL_STATIC_DRAW);
+
+    vao_attr(block->vao, block->vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
+
+    // Store the number of vertices (number of indices for indexed rendering)
+    block->num_vertices = sizeof(cube_indices) / sizeof(cube_indices[0]);
+    
 }
- 
+
 void draw_block(Block *block)
 {
     vao_bind(block->vao);
-
-    glDrawArrays(GL_TRIANGLES, 0, block->num_vertices);
+    ebo_bind(block->ebo);
+    glDrawElements(GL_TRIANGLES, block->num_vertices, GL_UNSIGNED_INT, 0);
 }
+
+
+
+bool is_chunk_visible(Camera *camera, int chunk_x, int chunk_z, int render_distance)
+{
+    return true;
+}
+
+void generate_visible_blocks(Camera *camera, Block *block)
+{
+    
+}
+
+    
+
+
 
 
 
