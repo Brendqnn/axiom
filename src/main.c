@@ -9,7 +9,7 @@
 
 #include "camera.h"
 #include "shader.h"
-#include "block.h"
+#include "chunk.h"
 #include "texture.h"
 
 void calculate_fps(double frame_time) {
@@ -51,7 +51,7 @@ int main() {
     Shader shader = shader_create("default.vert", "default.frag");
                             
     Camera camera;
-    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV);
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV, 10);
     
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disable cursor
     
@@ -75,12 +75,14 @@ int main() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
-    
-    Block block;
-    setup_block(&block, 1.0f);
-    
-    //generate_visible_blocks(&camera, &block);
-               
+
+    Chunk chunks[CHUNK_SIZE][CHUNK_SIZE];
+    for (size_t z = 0; z < CHUNK_SIZE; z++) {
+        for (size_t x = 0; x < CHUNK_SIZE; x++) {
+            setup_chunk(&chunks[z][x]);
+        }
+    }
+                
     while (!glfwWindowShouldClose(window)) {
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
@@ -94,14 +96,16 @@ int main() {
         camera_get_view_matrix(&camera, view);
 
         glUseProgram(shader.ID);
-          
+
+        generate_visible_blocks(&camera, chunks);
+        
         // Set the uniform matrices in the shader
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (const GLfloat*)projection);
 
-        draw_block(&block);
-
+        unload_chunks_outside_distance(&camera, chunks);
+                
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
             exit(1);

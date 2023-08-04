@@ -17,17 +17,22 @@ typedef struct Camera {
     vec3 up;
     vec3 right;
     vec3 world_up;
+    
     float yaw;
     float pitch;
     float movement_speed;
     float mouse_sensitivity;
     float fov;
+    
     bool first_mouse;
+    
     double last_x;
     double last_y;
+
+    int render_distance;
 } Camera;
 
-void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov);
+void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov, int render_distance);
 void camera_update(Camera* camera, GLFWwindow* window, float delta_time);
 void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time);
 void camera_process_mouse(Camera* camera, double x_offset, double y_offset);

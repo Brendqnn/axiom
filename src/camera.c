@@ -2,7 +2,7 @@
 #include <math.h>
 
 
-void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov) {
+void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov, int render_distance) {
     glm_vec3_copy(position, camera->position);
     glm_vec3_copy(up, camera->world_up);
 
@@ -11,6 +11,7 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->fov = fov;
     camera->movement_speed = CAMERA_SPEED;
     camera->mouse_sensitivity = CAMERA_SENSITIVITY;
+    camera->render_distance = render_distance;
 
     camera->first_mouse = true;
     camera->last_x = 0.0;
