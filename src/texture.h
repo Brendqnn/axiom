@@ -9,7 +9,7 @@
 
 
 typedef struct Texture {
-	 GLuint id;
+    GLuint id;
 	GLenum target;
 	int width;
 	int height;
