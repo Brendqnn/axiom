@@ -3,12 +3,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "gfx/stb_image.h"
 
-
 Texture texture_load(const char* filename, bool enable_asf) {
     Texture texture;
     memset(&texture, 0, sizeof(Texture));
 
-    // Load image using stb_image library
     int width, height, numChannels;
     unsigned char* imageData = stbi_load(filename, &width, &height, &numChannels, 0);
     if (!imageData) {
@@ -16,24 +14,20 @@ Texture texture_load(const char* filename, bool enable_asf) {
         return texture;
     }
 
-    // Generate and bind texture object
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_2D, texture.id);
 
-    // Set texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Enable anisotropic filtering if requested
     if (enable_asf && glewIsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
         float maxAnisotropy;
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
     }
 
-    // Determine the texture format based on the number of channels
     GLenum format;
     if (numChannels == 1)
         format = GL_RED;
@@ -47,17 +41,13 @@ Texture texture_load(const char* filename, bool enable_asf) {
         return texture;
     }
 
-    // Upload texture data
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    // Unbind the texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Free the image data
     stbi_image_free(imageData);
 
-    // Set the texture target
     texture.target = GL_TEXTURE_2D;
 
     return texture;
@@ -77,7 +67,6 @@ void texture_cleanup(Texture* texture) {
     texture->id = 0;
     texture->target = 0;
 
-    // Reset texture parameters
     glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

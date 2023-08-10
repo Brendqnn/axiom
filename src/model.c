@@ -12,19 +12,16 @@ static void process_node(const struct aiScene *scene, const struct aiNode *node,
         unsigned int *indices = malloc(sizeof(unsigned int) * mesh->mNumFaces * 3);
 
         for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-            // Vertex positions
             vertices[j].Position[0] = mesh->mVertices[j].x;
             vertices[j].Position[1] = mesh->mVertices[j].y;
             vertices[j].Position[2] = mesh->mVertices[j].z;
 
-            // Vertex normals
             if (mesh->mNormals) {
                 vertices[j].Normal[0] = mesh->mNormals[j].x;
                 vertices[j].Normal[1] = mesh->mNormals[j].y;
                 vertices[j].Normal[2] = mesh->mNormals[j].z;
             }
 
-            // Print vertex information for debugging
             printf("Vertex %u:\n", j);
             printf("  Position: %.3f %.3f %.3f\n", vertices[j].Position[0], vertices[j].Position[1], vertices[j].Position[2]);
             if (mesh->mNormals) {
