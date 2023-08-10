@@ -91,7 +91,7 @@ int main() {
         camera_get_view_matrix(&camera, view);
 
         glUseProgram(shader.ID);
-                          
+        
         // Set the uniform matrices in the shader
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*)view);
