@@ -9,7 +9,7 @@
 
 #include "camera.h"
 #include "shader.h"
-
+#include "model.h"
 
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
@@ -70,9 +70,13 @@ int main() {
     double center_y = WINDOW_HEIGHT / 2;
     glfwSetCursorPos(window, center_x, center_y);
                   
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
+
+    Model *model1 = load_model("res/yea.obj");
+    if (!model1) {
+        fprintf(stderr, "Model loading failed\n");
+    }
                     
     while (!glfwWindowShouldClose(window)) {
         double current_time = glfwGetTime();
@@ -87,11 +91,13 @@ int main() {
         camera_get_view_matrix(&camera, view);
 
         glUseProgram(shader.ID);
-                
+                          
         // Set the uniform matrices in the shader
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (const GLfloat*)projection);
+
+        draw_model(model1);
 		
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
