@@ -4,7 +4,7 @@
 #include "mesh.h"
 
 typedef struct Model {
-    Mesh **meshes; 
+    Mesh *meshes; 
     unsigned int mesh_count;
 } Model;
 

@@ -11,6 +11,7 @@
 #include "shader.h"
 #include "model.h"
 
+
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
     static int frame_count = 0;
@@ -73,32 +74,27 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
 
-    Model *model1 = load_model("res/yea.obj");
-    if (!model1) {
-        fprintf(stderr, "Model loading failed\n");
-    }
-                    
+    Model *tree = load_model("res/scene.gltf");
+            
     while (!glfwWindowShouldClose(window)) {
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
         previous_time = current_time;
         calculate_fps(delta_time);
-
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         camera_update(&camera, window, delta_time);
-
         camera_get_view_matrix(&camera, view);
 
         glUseProgram(shader.ID);
-        
-        // Set the uniform matrices in the shader
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*)view);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (const GLfloat*)projection);
 
-        draw_model(model1);
-		
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (void *)model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (void *)view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (void *)projection);
+
+        draw_model(tree);
+        
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
             exit(1);
@@ -107,7 +103,7 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-        
+       
     glfwTerminate();
     return 0;
 }

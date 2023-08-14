@@ -6,6 +6,9 @@
 #include <GL/glew.h>
 #include <cglm/cglm.h>
 
+#include "vao.h"
+#include "vbo.h"
+#include "ebo.h"
 
 typedef struct Vertex {
     vec3 Position;
@@ -14,7 +17,9 @@ typedef struct Vertex {
 } Vertex;
 
 typedef struct Mesh {
-    unsigned int vao, vbo, ebo;
+    struct VAO vao;
+    struct VBO vbo;
+    struct EBO ebo;
 
     Vertex *vertices;
     unsigned int *indices;
@@ -22,7 +27,7 @@ typedef struct Mesh {
     unsigned int index_count;
 } Mesh;
 
-Mesh *create_mesh(Vertex *vertices, unsigned int vertex_count, unsigned int *indices, unsigned int index_count);
+Mesh create_mesh(Vertex *vertices, unsigned int vertex_count, unsigned int *indices, unsigned int index_count);
 void destroy_mesh(Mesh *mesh);
 void draw_mesh(Mesh *mesh);
 
