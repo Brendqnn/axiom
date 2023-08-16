@@ -48,23 +48,22 @@ int main() {
         return -1;
     }
 
-     GLfloat vertices[] =
-	{
-		-0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
-		0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
-		0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
-		-0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
-		0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
-		0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
-	};
+    float vertices[] =
+        {
+            -0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower left corner
+            0.5f, -0.5f * sqrt(3) / 3, 0.0f, // Lower right corner
+            0.0f, 0.5f * sqrt(3) * 2 / 3, 0.0f, // Upper corner
+            -0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner left
+            0.5f / 2, 0.5f * sqrt(3) / 6, 0.0f, // Inner right
+            0.0f, -0.5f * sqrt(3) / 3, 0.0f // Inner down
+        };
 
-    // Indices for vertices order
-    GLuint indices[] =
-    {
-        0, 3, 5, // Lower left triangle
-        3, 2, 4, // Lower right triangle
-        5, 4, 1 // Upper triangle
-    };
+    unsigned int indices[] =
+        {
+            0, 3, 5, // Lower left triangle
+            3, 2, 4, // Lower right triangle
+            5, 4, 1 // Upper triangle
+        };
 
     struct VBO vbo = vbo_create(GL_ARRAY_BUFFER, false);
     struct VAO vao = vao_create();
@@ -76,7 +75,7 @@ int main() {
     vao_attr(vao, vbo, 0, 3, GL_FLOAT, 0, 0);
 
     ebo_buffer(ebo, indices, sizeof(indices), GL_STATIC_DRAW);
-    int index_count = sizeof(indices) / sizeof(GLuint);
+    int index_count = sizeof(indices) / sizeof(indices[0]);
 
     Shader shader = shader_create("default.vert", "default.frag");
 
@@ -95,8 +94,7 @@ int main() {
     glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
 
     double previous_time = glfwGetTime();
-    double frame_time = 1.0 / 60.0;
-
+    
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     // Center the cursor initially
@@ -105,6 +103,8 @@ int main() {
     glfwSetCursorPos(window, center_x, center_y);
 
     while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
         previous_time = current_time;
@@ -139,7 +139,6 @@ int main() {
     glfwTerminate();
     return 0;
 }
-
 
 
 
