@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define ARRAY_LEN(xs) sizeof(xs)/sizeof(xs[0])
+
+
 void calculate_fps(double frame_time) {
     static double previous_time = 0.0;
     static int frame_count = 0;

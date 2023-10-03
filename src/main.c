@@ -8,20 +8,22 @@
 #include "camera.h"
 #include "shader.h"
 #include "util/util.h"
-#include "block.h"
+#include "model.h"
 
 
-int main() {
+int main(void) {
     if (!glfwInit()) {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
+    
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Window", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
         return -1;
     }
+    
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
         printf("Failed to initialize GLEW\n");
@@ -55,8 +57,8 @@ int main() {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Block *block = create_block();
-
+    Model *tree = load_model("res/summer tree.obj");
+    
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -64,7 +66,7 @@ int main() {
         float delta_time = current_time - previous_time;
         previous_time = current_time;
         calculate_fps(delta_time);
-        // Process input
+        
         camera_update(&camera, window, delta_time);
 
         camera_get_view_matrix(&camera, view);
@@ -74,15 +76,13 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        glUniform1i(glGetUniformLocation(shader.ID, "textureSampler"), 0);
-
-        draw_block(block);
+        //glUniform1i(glGetUniformLocation(shader.ID, "textureSampler"), 0);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);
-            
             exit(1);
         }
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
