@@ -1,10 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
+#define PI 3.14159265358979323846
+#define CAMERA_SPEED 1.0f
+#define CAMERA_SENSITIVITY 0.5f
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
+#define CAMERA_FOV 90.0f
 
 #define ARRAY_LEN(xs) sizeof(xs)/sizeof(xs[0])
 
-
-void calculate_fps(double frame_time) {
+void calculate_fps() {
     static double previous_time = 0.0;
     static int frame_count = 0;
 

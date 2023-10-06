@@ -16,8 +16,11 @@ int main(void) {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
+
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
     
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Window", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "OpenGL Window", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
@@ -30,7 +33,7 @@ int main(void) {
         glfwTerminate();
         return -1;
     }
-    
+        
     Shader shader = shader_create("default.vert", "default.frag");
 
     Camera camera;
@@ -61,12 +64,10 @@ int main(void) {
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
         previous_time = current_time;
-        calculate_fps(delta_time);
-        
+          
         camera_update(&camera, window, delta_time);
 
         camera_get_view_matrix(&camera, view);
@@ -85,6 +86,8 @@ int main(void) {
         
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        calculate_fps();
     }
     
     shader_destroy(&shader);
