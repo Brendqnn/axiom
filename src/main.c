@@ -57,7 +57,7 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *tree = load_model("res/summer tree.obj");
+    Model *table = load_model("res/tree.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -75,8 +75,8 @@ int main(void) {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
-
-        //glUniform1i(glGetUniformLocation(shader.ID, "textureSampler"), 0);
+        
+        draw_model(table);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);

@@ -31,6 +31,7 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices, unsigned int* ind
 void draw_mesh(Mesh* mesh)
 {
     glBindVertexArray(mesh->VAO);
+    
     glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
 }
 
