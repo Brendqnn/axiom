@@ -10,7 +10,8 @@
 #include "util/util.h"
 #include "model.h"
 
-void calculate_fps() {
+void calculate_fps()
+{
     static double previous_time = 0.0;
     static int frame_count = 0;
 
@@ -50,7 +51,7 @@ int main(void) {
         return -1;
     }
         
-    Shader shader = shader_create("default.vert", "default.frag");
+    Shader shader = shader_create("src/gfx/default.vert", "src/gfx/default.frag");
 
     Camera camera;
     camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV, 10);
