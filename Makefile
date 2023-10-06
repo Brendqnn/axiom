@@ -2,15 +2,15 @@ DEBUG_FLAGS = -Wall -Icglm/include -g
 RELEASE_FLAGS = -O3 -Icglm/include
 LDFLAGS = -lglfw -lGLEW -lGL -lm -lassimp
 
-DEBUG_RUN_COMMAND = bin/debug/main.exe
-RELEASE_RUN_COMMAND = bin/release/main.exe
+DEBUG_RUN_COMMAND = bin/debug/main
+RELEASE_RUN_COMMAND = bin/release/main
 
 SOURCES = $(wildcard src/*.c)
 DEBUG_OBJECTS = $(patsubst src/%.c, bin/debug/%.o, $(SOURCES))
 RELEASE_OBJECTS = $(patsubst src/%.c, bin/release/%.o, $(SOURCES))
 
-DEBUG_EXECUTABLE = bin/debug/main.exe
-RELEASE_EXECUTABLE = bin/release/main.exe
+DEBUG_EXECUTABLE = bin/debug/main
+RELEASE_EXECUTABLE = bin/release/main
 
 all: debug release
 

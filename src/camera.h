@@ -3,6 +3,7 @@
 
 #include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
+#include "util/util.h"
 
 typedef struct Camera {
     vec3 position;
