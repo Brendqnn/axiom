@@ -57,7 +57,7 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *table = load_model("res/tree.obj");
+    Model *table = load_model("res/table.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -86,6 +86,7 @@ int main(void) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    
     shader_destroy(&shader);
     glfwTerminate();
     return 0;
