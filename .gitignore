@@ -1,7 +1,6 @@
 # Media files
 *.mp3
 *.mp4
-/res/
 *.txt
 
 # emacs
