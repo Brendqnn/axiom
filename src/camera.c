@@ -2,7 +2,8 @@
 #include <math.h>
 
 
-void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov, int render_distance) {
+void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov, int render_distance)
+{
     glm_vec3_copy(position, camera->position);
     glm_vec3_copy(up, camera->world_up);
 
@@ -30,40 +31,68 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     glm_vec3_normalize(camera->up);
 }
 
-void camera_update(Camera* camera, GLFWwindow* window, float delta_time) {
+void camera_update(Camera* camera, GLFWwindow* window, float delta_time)
+{
     camera_process_input(camera, window, delta_time);
 }
 
-void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time) {
+void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
+{
     float velocity = camera->movement_speed * delta_time;
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        vec3 movement;
-        glm_vec3_scale(camera->front, velocity, movement);
-        glm_vec3_add(camera->position, movement, camera->position);
-    }
-	
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        vec3 movement;
-        glm_vec3_scale(camera->front, velocity, movement);
-        glm_vec3_sub(camera->position, movement, camera->position);
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        vec3 movement;
-        glm_vec3_scale(camera->right, velocity, movement);
-        glm_vec3_sub(camera->position, movement, camera->position);
+    vec3 movement = {0.0f, 0.0f, 0.0f}; // Initialize the movement vector.
+    
+    switch (glfwGetKey(window, GLFW_KEY_W)) {
+        case GLFW_PRESS:
+            glm_vec3_scale(camera->front, velocity, movement);
+            glm_vec3_add(camera->position, movement, camera->position);
+            break;
+        case GLFW_RELEASE:
+            // Handle something here idk yet
+            break;
+        default:
+            break;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        vec3 movement;
-        glm_vec3_scale(camera->right, velocity, movement);
-        glm_vec3_add(camera->position, movement, camera->position);
+    switch (glfwGetKey(window, GLFW_KEY_S)) {
+        case GLFW_PRESS:
+            glm_vec3_scale(camera->front, velocity, movement);
+            glm_vec3_sub(camera->position, movement, camera->position);
+            break;
+        case GLFW_RELEASE:
+            
+            break;
+        default:
+            break;
     }
 
+    switch (glfwGetKey(window, GLFW_KEY_A)) {
+        case GLFW_PRESS:
+            glm_vec3_scale(camera->right, velocity, movement);
+            glm_vec3_sub(camera->position, movement, camera->position);
+            break;
+        case GLFW_RELEASE:
+            
+            break;
+        default:
+            break;
+    }
+
+    switch (glfwGetKey(window, GLFW_KEY_D)) {
+        case GLFW_PRESS:
+            glm_vec3_scale(camera->right, velocity, movement);
+            glm_vec3_add(camera->position, movement, camera->position);
+            break;
+        case GLFW_RELEASE:
+            
+            break;
+        default:
+            break;
+    }
 }
 
-void camera_process_mouse(Camera* camera, double x_offset, double y_offset) {
+
+void camera_process_mouse(Camera* camera, double x_offset, double y_offset)
+{
     if (camera->first_mouse) {
         camera->last_x = x_offset;
         camera->last_y = y_offset;
@@ -94,13 +123,15 @@ void camera_process_mouse(Camera* camera, double x_offset, double y_offset) {
     glm_vec3_normalize(camera->up);
 }
 
-void camera_get_view_matrix(Camera* camera, mat4 view_matrix) {
+void camera_get_view_matrix(Camera* camera, mat4 view_matrix)
+{
     vec3 center;
     glm_vec3_add(camera->position, camera->front, center);
     glm_lookat(camera->position, center, camera->up, view_matrix);
 }
 
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
     Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
 
     static bool firstMouse = true;

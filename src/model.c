@@ -1,15 +1,22 @@
 #include "model.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "gfx/stb_image.h"
+
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-static Mesh* process_mesh(struct aiMesh *ai_mesh);
+static Texture* load_material_textures(const struct aiMaterial *mat);
+static Texture texture_from_file(const char* filename, const char* typeName);
+static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model);
+static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene);
+
 
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         struct aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-        Mesh *processed_mesh = process_mesh(mesh);
+        Mesh *processed_mesh = process_mesh(mesh, scene);
         if (processed_mesh) {
             model->meshes = realloc(model->meshes, sizeof(Mesh*) * (model->num_meshes + 1));
             if (model->meshes) {
@@ -23,7 +30,7 @@ static void process_node(struct aiNode *node, const struct aiScene *scene, Model
     }
 }
 
-static Mesh* process_mesh(struct aiMesh *ai_mesh)
+static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene)
 {
     if (!ai_mesh->mVertices || !ai_mesh->mNumVertices || !ai_mesh->mFaces || !ai_mesh->mNumFaces) {
         return NULL;
@@ -31,6 +38,12 @@ static Mesh* process_mesh(struct aiMesh *ai_mesh)
 
     Vertex *vertices = malloc(ai_mesh->mNumVertices * sizeof(Vertex));
     if (!vertices) {
+        return NULL;
+    }
+
+    unsigned int *indices = malloc(ai_mesh->mNumFaces * 3 * sizeof(unsigned int));
+    if (!indices) {
+        free(vertices);
         return NULL;
     }
 
@@ -44,12 +57,14 @@ static Mesh* process_mesh(struct aiMesh *ai_mesh)
             vertices[i].normal[1] = ai_mesh->mNormals[i].y;
             vertices[i].normal[2] = ai_mesh->mNormals[i].z;
         }
-    }
 
-    unsigned int *indices = malloc(ai_mesh->mNumFaces * 3 * sizeof(unsigned int));
-    if (!indices) {
-        free(vertices);
-        return NULL;
+        if (ai_mesh->mTextureCoords[0]) {
+            vertices[i].tex_coords[0] = ai_mesh->mTextureCoords[0][i].x;
+            vertices[i].tex_coords[1] = ai_mesh->mTextureCoords[0][i].y;
+        } else {
+            vertices[i].tex_coords[0] = 0.0f;
+            vertices[i].tex_coords[1] = 0.0f;
+        }
     }
 
     for (unsigned int i = 0, j = 0; i < ai_mesh->mNumFaces; i++) {
@@ -59,7 +74,9 @@ static Mesh* process_mesh(struct aiMesh *ai_mesh)
         }
     }
 
-    Mesh *mesh = create_mesh(vertices, ai_mesh->mNumVertices, indices, ai_mesh->mNumFaces * 3);
+    
+    Mesh *mesh = create_mesh(vertices, ai_mesh->mNumVertices, indices, ai_mesh->mNumFaces * 3, NULL);
+    
     return mesh;
 }
 
@@ -100,4 +117,3 @@ void destroy_model(Model *model)
     free(model->meshes);
     free(model);
 }
-

@@ -1,13 +1,17 @@
 #include "mesh.h"
 
-Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices, unsigned int* indices, unsigned int num_indices) {
+Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
+                  unsigned int* indices, unsigned int num_indices, Texture *textures)
+{
     Mesh* mesh = malloc(sizeof(Mesh));
 
     mesh->vertices = vertices;
     mesh->indices = indices;
+    mesh->textures = textures;
+    
     mesh->num_vertices = num_vertices;
     mesh->num_indices = num_indices;
-
+    
     glGenVertexArrays(1, &mesh->VAO);
     glGenBuffers(1, &mesh->VBO);
     glGenBuffers(1, &mesh->EBO);
@@ -31,9 +35,12 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices, unsigned int* ind
 void draw_mesh(Mesh* mesh)
 {
     glBindVertexArray(mesh->VAO);
+   
+    glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);   
     
-    glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0); // Unbind VAO
 }
+
 
 void destroy_mesh(Mesh* mesh)
 {
@@ -43,4 +50,3 @@ void destroy_mesh(Mesh* mesh)
     free(mesh->vertices);
     free(mesh);
 }
-
