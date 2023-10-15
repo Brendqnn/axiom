@@ -7,6 +7,7 @@
 #include <GL/glew.h>
 #include <cglm/cglm.h>
 
+#include "shader.h"
 
 typedef struct {
     vec3 position;
@@ -34,8 +35,8 @@ typedef struct {
 } Mesh;
 
 Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
-                  unsigned int* indices, unsigned int num_indices, Texture *textures);
-void draw_mesh(Mesh *mesh);
+                  unsigned int* indices, unsigned int num_indices, Texture *textures, unsigned int num_textures);
+void draw_mesh(Mesh *mesh, Shader shader);
 void destroy_mesh(Mesh *mesh);
 
 #endif // MESH_H

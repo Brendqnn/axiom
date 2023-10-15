@@ -37,7 +37,7 @@ int main(void) {
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
     
-    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "OpenGL Window", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Axiom", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
@@ -77,7 +77,7 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *table = load_model("res/table.obj");
+    Model *table = load_model("res/prunus_persica.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -94,7 +94,7 @@ int main(void) {
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
         
-        draw_model(table);
+        draw_model(table, shader);
 
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             shader_destroy(&shader);

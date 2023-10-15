@@ -13,7 +13,7 @@ typedef struct {
 } Model;
 
 Model *load_model(const char *model_path);
-void draw_model(Model *model);
+void draw_model(Model *model, Shader shader);
 void destroy_model(Model *model);
 
 #endif // MODEL_H

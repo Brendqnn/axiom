@@ -3,6 +3,8 @@
 *.mp4
 *.txt
 
+/res/
+
 # emacs
 
 # Prerequisites

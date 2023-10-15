@@ -1,7 +1,7 @@
 #include "mesh.h"
 
 Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
-                  unsigned int* indices, unsigned int num_indices, Texture *textures)
+                  unsigned int* indices, unsigned int num_indices, Texture *textures, unsigned int num_textures)
 {
     Mesh* mesh = malloc(sizeof(Mesh));
 
@@ -11,6 +11,7 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
     
     mesh->num_vertices = num_vertices;
     mesh->num_indices = num_indices;
+    mesh->num_textures = num_textures;
     
     glGenVertexArrays(1, &mesh->VAO);
     glGenBuffers(1, &mesh->VBO);
@@ -32,13 +33,21 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
     return mesh;
 }
 
-void draw_mesh(Mesh* mesh)
+void draw_mesh(Mesh* mesh, Shader shader)
 {
     glBindVertexArray(mesh->VAO);
-   
-    glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);   
-    
-    glBindVertexArray(0); // Unbind VAO
+
+    for (unsigned int i = 0; i < mesh->num_textures; i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
+    }
+
+    glUniform1i(glGetUniformLocation(shader.ID, "texture_diffuse1"), 0);
+    glActiveTexture(GL_TEXTURE0);
+
+    glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
 }
 
 
@@ -47,6 +56,7 @@ void destroy_mesh(Mesh* mesh)
     if (mesh == NULL) {
         return;
     }
+    
     free(mesh->vertices);
     free(mesh);
 }

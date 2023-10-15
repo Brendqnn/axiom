@@ -11,4 +11,3 @@ void main()
     vec4 textureColor = texture(texture_diffuse1, TexCoords); // Sample the diffuse texture
     FragColor = textureColor; // Use the texture color as the final fragment color
 }
-
