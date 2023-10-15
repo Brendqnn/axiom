@@ -1,4 +1,4 @@
-# Axiom - 3D Graphics Rendering Engine
+# Axiom
 
 Axiom is a powerful 3D graphics rendering engine built on top of OpenGL, designed to provide a solid foundation for creating immersive 3D applications and games. With Axiom, you can harness the full potential of modern GPUs to bring your digital worlds to life.
 
