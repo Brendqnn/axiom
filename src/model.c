@@ -12,8 +12,7 @@ static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene);
 
 static Texture texture_from_file(const char* filename, const char* typeName)
 {
-    Texture texture;
-    memset(&texture, 0, sizeof(Texture));
+    Texture texture = {0};
 
     int width, height, numChannels;
     unsigned char* imageData = stbi_load(filename, &width, &height, &numChannels, 0);
@@ -23,19 +22,7 @@ static Texture texture_from_file(const char* filename, const char* typeName)
     }
 
     glGenTextures(1, &texture.id);
-
-    GLenum format;
-    if (numChannels == 1)
-        format = GL_RED;
-    else if (numChannels == 3)
-        format = GL_RGB;
-    else if (numChannels == 4)
-        format = GL_RGBA;
-    else {
-        fprintf(stderr, "Invalid number of channels in texture: %d\n", numChannels);
-        stbi_image_free(imageData);
-        return texture;
-    }
+    GLenum format = (numChannels == 1) ? GL_RED : (numChannels == 3) ? GL_RGB : GL_RGBA;
 
     glBindTexture(GL_TEXTURE_2D, texture.id);
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
@@ -50,7 +37,6 @@ static Texture texture_from_file(const char* filename, const char* typeName)
 
     strncpy(texture.type, typeName, sizeof(texture.type) - 1);
     texture.type[sizeof(texture.type) - 1] = '\0';
-
     strncpy(texture.path, filename, sizeof(texture.path) - 1);
     texture.path[sizeof(texture.path) - 1] = '\0';
 
@@ -75,21 +61,45 @@ static void process_node(struct aiNode *node, const struct aiScene *scene, Model
     }
 }
 
-static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene)
-{
+static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
     if (!ai_mesh->mVertices || !ai_mesh->mNumVertices || !ai_mesh->mFaces || !ai_mesh->mNumFaces) {
         return NULL;
     }
 
-    Vertex *vertices = malloc(ai_mesh->mNumVertices * sizeof(Vertex));
-    if (!vertices) {
+    Vertex* vertices = malloc(ai_mesh->mNumVertices * sizeof(Vertex));
+    unsigned int* indices = malloc(ai_mesh->mNumFaces * 3 * sizeof(unsigned int));
+
+    if (!vertices || !indices) {
+        free(vertices);
+        free(indices);
         return NULL;
     }
 
-    unsigned int *indices = malloc(ai_mesh->mNumFaces * 3 * sizeof(unsigned int));
-    if (!indices) {
-        free(vertices);
-        return NULL;
+    struct {
+        enum aiTextureType type;
+        const char* uniformName;
+    } textureTypeMap[] = {
+        {aiTextureType_DIFFUSE, "texture_diffuse1"},
+        {aiTextureType_HEIGHT, "texture_specular1"},
+        {aiTextureType_OPACITY, "texture_opacity1"},
+    };
+
+    Texture* textures = NULL;
+    int num_textures = 0;
+
+    if (ai_mesh->mMaterialIndex >= 0) {
+        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
+
+        for (size_t i = 0; i < sizeof(textureTypeMap) / sizeof(textureTypeMap[0]); i++) {
+            struct aiString path;
+            enum aiTextureType textureType = textureTypeMap[i].type;
+
+            if (AI_SUCCESS == aiGetMaterialTexture(material, textureType, 0, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                textures = realloc(textures, (num_textures + 1) * sizeof(Texture));
+                textures[num_textures] = texture_from_file(path.data, textureTypeMap[i].uniformName);
+                num_textures++;
+            }
+        }
     }
 
     for (unsigned int i = 0; i < ai_mesh->mNumVertices; i++) {
@@ -112,31 +122,18 @@ static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene)
         }
     }
 
-    for (unsigned int i = 0, j = 0; i < ai_mesh->mNumFaces; i++) {
+    unsigned int indexCount = 0;
+    for (unsigned int i = 0; i < ai_mesh->mNumFaces; i++) {
         struct aiFace face = ai_mesh->mFaces[i];
         for (unsigned int k = 0; k < face.mNumIndices; k++) {
-            indices[j++] = face.mIndices[k];
+            indices[indexCount++] = face.mIndices[k];
         }
     }
 
-    Texture* textures = NULL;
+    Mesh* mesh = create_mesh(vertices, ai_mesh->mNumVertices, indices, indexCount, textures, num_textures);
 
-    int num_textures = 0;
-
-    if (ai_mesh->mMaterialIndex >= 0) {
-        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
-        num_textures = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
-        textures = malloc(num_textures * sizeof(Texture));
-
-        for (unsigned int i = 0; i < num_textures; i++) {
-            struct aiString path;
-            if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                textures[i] = texture_from_file(path.data, "texture_diffuse1");
-            }
-        }
-    }
-
-    Mesh *mesh = create_mesh(vertices, ai_mesh->mNumVertices, indices, ai_mesh->mNumFaces * 3, textures, num_textures);
+    free(vertices);
+    free(indices);
 
     return mesh;
 }

@@ -42,11 +42,8 @@ void draw_mesh(Mesh* mesh, Shader shader)
         glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
     }
 
-    glUniform1i(glGetUniformLocation(shader.ID, "texture_diffuse1"), 0);
     glActiveTexture(GL_TEXTURE0);
-
     glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
-
     glBindVertexArray(0);
 }
 
@@ -56,7 +53,5 @@ void destroy_mesh(Mesh* mesh)
     if (mesh == NULL) {
         return;
     }
-    
-    free(mesh->vertices);
     free(mesh);
 }

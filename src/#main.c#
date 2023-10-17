@@ -108,7 +108,7 @@ int main(void) {
         draw_model(tree, shader);
         
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            shader_destroy(&shader);
+            
             exit(1);
         }
         
