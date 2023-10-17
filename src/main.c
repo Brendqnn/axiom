@@ -78,7 +78,6 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    //Model *tree2 = load_model("res/Grass field.obj");
     Model *tree = load_model("res/prunus_persica.obj");
     
     while (!glfwWindowShouldClose(window)) {
@@ -91,24 +90,20 @@ int main(void) {
 
         glm_mat4_identity(tree_m);
         glm_scale(tree_m, (vec3){0.1f, 0.1f, 0.1f});
-        
-        //glm_mat4_identity(grass_m);
-        //glm_scale(grass_m, (vec3){0.1f, 0.1f, 0.1f});
+       
         //glm_translate(grass_m, (vec3){0.0f, -5.0f, -5.0f});
 
         camera_get_view_matrix(&camera, view);
         glUseProgram(shader.ID);
 
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "tree_m"), 1, GL_FALSE, (float*)tree_m);
-        //glUniformMatrix4fv(glGetUniformLocation(shader.ID, "grass_m"), 1, GL_FALSE, (float*)grass_m);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        //draw_model(grass, shader);
         draw_model(tree, shader);
         
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            shader_destroy(&shader);
+            
             exit(1);
         }
         
