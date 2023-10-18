@@ -4,6 +4,7 @@
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 #define CAMERA_FOV 90.0f
+#define MAX_TEXTURES 100
 
 #define ARRAY_LEN(xs) sizeof(xs)/sizeof(xs[0])
 

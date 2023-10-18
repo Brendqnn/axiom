@@ -40,4 +40,3 @@ void draw_mesh(Mesh *mesh, Shader shader);
 void destroy_mesh(Mesh *mesh);
 
 #endif // MESH_H
-    

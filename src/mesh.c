@@ -40,6 +40,7 @@ void draw_mesh(Mesh* mesh, Shader shader)
     for (unsigned int i = 0; i < mesh->num_textures; i++) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
+        glUniform1i(glGetUniformLocation(shader.ID, mesh->textures[i].type), i);
     }
 
     glActiveTexture(GL_TEXTURE0);
@@ -47,11 +48,12 @@ void draw_mesh(Mesh* mesh, Shader shader)
     glBindVertexArray(0);
 }
 
-
 void destroy_mesh(Mesh* mesh)
 {
     if (mesh == NULL) {
         return;
     }
+    free(mesh->vertices);
+    free(mesh->indices);
     free(mesh);
 }

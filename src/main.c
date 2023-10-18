@@ -60,9 +60,8 @@ int main(void) {
     glfwSwapInterval(1); // Enable VSync
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disable cursor
 
-    mat4 tree_m, grass_m, view, projection;
-    glm_mat4_identity(tree_m);
-    glm_mat4_identity(grass_m);
+    mat4 model, view, projection;
+    glm_mat4_identity(model);
     glm_mat4_identity(view);
     glm_mat4_identity(projection);
 
@@ -78,7 +77,7 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *tree = load_model("res/prunus_persica.obj");
+    Model *tree = load_model("res/Prunus_Pendula.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -88,22 +87,21 @@ int main(void) {
           
         camera_update(&camera, window, delta_time);
 
-        glm_mat4_identity(tree_m);
-        glm_scale(tree_m, (vec3){0.1f, 0.1f, 0.1f});
-       
-        //glm_translate(grass_m, (vec3){0.0f, -5.0f, -5.0f});
+        glm_mat4_identity(model);
+        glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
+        //glm_translate(tree_m, (vec3){20.0f, 0.0f, 0.0f}); // Translate before scaling
 
-        camera_get_view_matrix(&camera, view);
         glUseProgram(shader.ID);
+        camera_get_view_matrix(&camera, view);
 
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "tree_m"), 1, GL_FALSE, (float*)tree_m);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
         draw_model(tree, shader);
         
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            
+            destroy_model(tree, shader);
             exit(1);
         }
         
@@ -113,7 +111,6 @@ int main(void) {
         calculate_fps();
     }
     
-    shader_destroy(&shader);
     glfwTerminate();
     return 0;
 }

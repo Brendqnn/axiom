@@ -10,8 +10,7 @@ static Texture texture_from_file(const char* filename, const char* typeName);
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model);
 static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene);
 
-static Texture texture_from_file(const char* filename, const char* typeName)
-{
+static Texture texture_from_file(const char* filename, const char* typeName) {
     Texture texture = {0};
 
     int width, height, numChannels;
@@ -22,19 +21,20 @@ static Texture texture_from_file(const char* filename, const char* typeName)
     }
 
     glGenTextures(1, &texture.id);
-    GLenum format = (numChannels == 1) ? GL_RED : (numChannels == 3) ? GL_RGB : GL_RGBA;
-
     glBindTexture(GL_TEXTURE_2D, texture.id);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
-    glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    stbi_image_free(imageData);
+    GLenum format = (numChannels == 1) ? GL_RED : (numChannels == 3) ? GL_RGB : GL_RGBA;
 
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(imageData);
+    
     strncpy(texture.type, typeName, sizeof(texture.type) - 1);
     texture.type[sizeof(texture.type) - 1] = '\0';
     strncpy(texture.path, filename, sizeof(texture.path) - 1);
@@ -43,16 +43,31 @@ static Texture texture_from_file(const char* filename, const char* typeName)
     return texture;
 }
 
+
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model)
 {
+    // Calculate the total number of meshes under this node
+    unsigned int totalMeshes = 0;
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        struct aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+        if (process_mesh(mesh, scene)) {
+            totalMeshes++;
+        }
+    }
+
+    if (totalMeshes > 0) {
+        model->meshes = realloc(model->meshes, (model->num_meshes + totalMeshes) * sizeof(Mesh*));
+        if (!model->meshes) {
+            fprintf(stderr, "Failed to allocate memory for meshes.\n");
+            return;
+        }
+    }
+    
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         struct aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh *processed_mesh = process_mesh(mesh, scene);
         if (processed_mesh) {
-            model->meshes = realloc(model->meshes, sizeof(Mesh*) * (model->num_meshes + 1));
-            if (model->meshes) {
-                model->meshes[model->num_meshes++] = processed_mesh;
-            }
+            model->meshes[model->num_meshes++] = processed_mesh;
         }
     }
 
@@ -60,6 +75,7 @@ static void process_node(struct aiNode *node, const struct aiScene *scene, Model
         process_node(node->mChildren[i], scene, model);
     }
 }
+
 
 static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
     if (!ai_mesh->mVertices || !ai_mesh->mNumVertices || !ai_mesh->mFaces || !ai_mesh->mNumFaces) {
@@ -106,12 +122,10 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
         vertices[i].position[0] = ai_mesh->mVertices[i].x;
         vertices[i].position[1] = ai_mesh->mVertices[i].y;
         vertices[i].position[2] = ai_mesh->mVertices[i].z;
-
-        if (ai_mesh->mNormals) {
-            vertices[i].normal[0] = ai_mesh->mNormals[i].x;
-            vertices[i].normal[1] = ai_mesh->mNormals[i].y;
-            vertices[i].normal[2] = ai_mesh->mNormals[i].z;
-        }
+        
+        vertices[i].normal[0] = ai_mesh->mNormals[i].x;
+        vertices[i].normal[1] = ai_mesh->mNormals[i].y;
+        vertices[i].normal[2] = ai_mesh->mNormals[i].z;     
 
         if (ai_mesh->mTextureCoords[0]) {
             vertices[i].tex_coords[0] = ai_mesh->mTextureCoords[0][i].x;
@@ -120,6 +134,7 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
             vertices[i].tex_coords[0] = 0.0f;
             vertices[i].tex_coords[1] = 0.0f;
         }
+
     }
 
     unsigned int indexCount = 0;
@@ -131,9 +146,6 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
     }
 
     Mesh* mesh = create_mesh(vertices, ai_mesh->mNumVertices, indices, indexCount, textures, num_textures);
-
-    free(vertices);
-    free(indices);
 
     return mesh;
 }
@@ -167,12 +179,12 @@ void draw_model(Model *model, Shader shader)
     }
 }
 
-void destroy_model(Model *model)
+void destroy_model(Model *model, Shader shader)
 {
     for (unsigned int i = 0; i < model->num_meshes; i++) {
         destroy_mesh(model->meshes[i]);
     }
-
+    shader_destroy(&shader);
     free(model->meshes);
     free(model);
 }
