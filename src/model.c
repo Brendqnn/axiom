@@ -46,7 +46,6 @@ static Texture texture_from_file(const char* filename, const char* typeName) {
 
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model)
 {
-    // Calculate the total number of meshes under this node
     unsigned int totalMeshes = 0;
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         struct aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
@@ -75,7 +74,6 @@ static void process_node(struct aiNode *node, const struct aiScene *scene, Model
         process_node(node->mChildren[i], scene, model);
     }
 }
-
 
 static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
     if (!ai_mesh->mVertices || !ai_mesh->mNumVertices || !ai_mesh->mFaces || !ai_mesh->mNumFaces) {
@@ -134,7 +132,6 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
             vertices[i].tex_coords[0] = 0.0f;
             vertices[i].tex_coords[1] = 0.0f;
         }
-
     }
 
     unsigned int indexCount = 0;

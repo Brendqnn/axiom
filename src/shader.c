@@ -3,7 +3,8 @@
 #include <stdlib.h>
 
 
-static void check_compile_errors(GLuint shader, char *type) {
+static void check_compile_errors(GLuint shader, char *type)
+{
     GLint success;
     GLchar infoLog[1024];
     if (strcmp(type, "VERTEX") == 0) {
@@ -29,10 +30,11 @@ static void check_compile_errors(GLuint shader, char *type) {
     }
 }
 
-char* read_shader_source(const char* file_path) {
+char* read_shader_source(const char* file_path)
+{
     FILE* file = fopen(file_path, "r");
     if (!file) {
-        printf("Failed to open shader file: %s\n", file_path);
+        fprintf(stderr, "Failed to open shader file: %s\n", file_path);
         return NULL;
     }
 
@@ -40,28 +42,24 @@ char* read_shader_source(const char* file_path) {
     long length = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    char* buffer = (char*)malloc(length + 1);
-    if (!buffer) {
-        printf("Failed to allocate memory for shader source.\n");
+    char* source = (char*)malloc(length + 1);
+    if (!source) {
+        fprintf(stderr, "Failed to allocate memory for shader source.\n");
         fclose(file);
         return NULL;
     }
 
-    size_t bytes_read = fread(buffer, 1, length, file);
-    if (bytes_read != (size_t)length) {
-        printf("Failed to read shader source from file: %s\n", file_path);
-        fclose(file);
-        free(buffer);
-        return NULL;
-    }
+    fread(source, 1, length, file);
+    source[length] = '\0';
 
-    buffer[length] = '\0';
+    //printf("Shader source:\n%s\n", source); // Add this line for debug output
 
     fclose(file);
-    return buffer;
+    return source;
 }
 
-Shader shader_create(const char* vertex_shader_path, const char* fragment_shader_path) {
+Shader shader_create(const char* vertex_shader_path, const char* fragment_shader_path)
+{
     Shader self;
 
     const char* vs_src = read_shader_source(vertex_shader_path);
@@ -99,7 +97,8 @@ Shader shader_create(const char* vertex_shader_path, const char* fragment_shader
     return self;
 }
 
-void shader_destroy(Shader *shader) {
+void shader_destroy(Shader *shader)
+{
     glDeleteProgram(shader->ID);
     shader->ID = 0;
 }

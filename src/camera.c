@@ -1,7 +1,6 @@
 #include "camera.h"
 #include <math.h>
 
-
 void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov, int render_distance)
 {
     glm_vec3_copy(position, camera->position);

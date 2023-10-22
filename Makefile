@@ -1,16 +1,22 @@
-DEBUG_FLAGS = -Wall -Icglm/include -g
-RELEASE_FLAGS = -O3 -Icglm/include
-LDFLAGS = -lglfw -lGLEW -lGL -lm -lassimp
+DEBUG_FLAGS = -Wall -I$(CGLM_INCLUDE_PATH) -I$(GLFW_INCLUDE_PATH) -I$(GLEW_INCLUDE_PATH) -IC:/sdk/Assimp/include -g
+RELEASE_FLAGS = -O3 
+LDFLAGS = -L$(GLFW_LIB_PATH) -L$(GLEW_LIB_PATH) -LC:/sdk/Assimp/lib/x64 -lglfw3 -lopengl32 -lgdi32 -luser32 -lglew32 -lassimp-vc143-mt
 
-DEBUG_RUN_COMMAND = bin/debug/main
-RELEASE_RUN_COMMAND = bin/release/main
+DEBUG_RUN_COMMAND = bin/debug/main.exe
+RELEASE_RUN_COMMAND = bin/release/main.exe
+
+GLFW_INCLUDE_PATH = C:/sdk/glfw-64/include
+GLFW_LIB_PATH = C:/sdk/glfw-64/lib-mingw-w64
+GLEW_INCLUDE_PATH = C:/sdk/glew-2.1.0/include
+GLEW_LIB_PATH = C:/sdk/glew-2.1.0/lib/Release/x64
+CGLM_INCLUDE_PATH = C:/sdk/cglm/include
 
 SOURCES = $(wildcard src/*.c)
 DEBUG_OBJECTS = $(patsubst src/%.c, bin/debug/%.o, $(SOURCES))
 RELEASE_OBJECTS = $(patsubst src/%.c, bin/release/%.o, $(SOURCES))
 
-DEBUG_EXECUTABLE = bin/debug/main
-RELEASE_EXECUTABLE = bin/release/main
+DEBUG_EXECUTABLE = bin/debug/main.exe
+RELEASE_EXECUTABLE = bin/release/main.exe
 
 all: debug release
 
@@ -31,11 +37,10 @@ bin/release/%.o: src/%.c
 	gcc -c -std=c11 $(RELEASE_FLAGS) $< -o $@
 
 clean:
-	rm -f $(DEBUG_EXECUTABLE) $(DEBUG_OBJECTS) $(RELEASE_EXECUTABLE) $(RELEASE_OBJECTS)
+    del /Q bin\debug\*.o
 
 run-debug: $(DEBUG_EXECUTABLE)
 	$(DEBUG_RUN_COMMAND)
 
 run-release: $(RELEASE_EXECUTABLE)
 	$(RELEASE_RUN_COMMAND)
-

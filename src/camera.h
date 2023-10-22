@@ -1,8 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 #include "util/util.h"
 
 typedef struct Camera {

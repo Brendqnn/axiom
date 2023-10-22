@@ -6,7 +6,6 @@
 #include <cglm/cglm.h>
 
 #include "camera.h"
-#include "shader.h"
 #include "util/util.h"
 #include "model.h"
 
@@ -33,11 +32,8 @@ int main(void) {
         printf("Failed to initialize GLFW\n");
         return -1;
     }
-
-    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
     
-    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Axiom", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
@@ -50,7 +46,7 @@ int main(void) {
         glfwTerminate();
         return -1;
     }
-        
+    
     Shader shader = shader_create("src/gfx/default.vert", "src/gfx/default.frag");
 
     Camera camera;
@@ -77,7 +73,7 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *tree = load_model("res/Prunus_Pendula.obj");
+    Model *tree = load_model("res/Prunus_Pendula_OBJ/Prunus_Pendula.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
