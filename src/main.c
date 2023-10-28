@@ -27,7 +27,8 @@ void calculate_fps()
     }
 }
 
-int main(void) {
+int main(void)
+{
     if (!glfwInit()) {
         printf("Failed to initialize GLFW\n");
         return -1;
@@ -73,10 +74,11 @@ int main(void) {
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *tree = load_model("res/Prunus_Pendula_OBJ/Prunus_Pendula.obj");
+    Model *tree = load_model("res/Prunus_Pendula.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
         previous_time = current_time;

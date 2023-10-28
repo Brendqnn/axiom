@@ -8,18 +8,13 @@
 #include <cglm/cglm.h>
 
 #include "shader.h"
+#include "texture.h"
 
 typedef struct {
     vec3 position;
     vec3 normal;
     vec2 tex_coords;
 } Vertex;
-
-typedef struct {
-    unsigned int id;
-    char type[32];
-    char path[128];
-} Texture;
 
 typedef struct {
     Vertex* vertices;

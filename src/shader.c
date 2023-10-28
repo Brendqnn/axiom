@@ -1,6 +1,7 @@
 #include "shader.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 static void check_compile_errors(GLuint shader, char *type)
@@ -32,30 +33,27 @@ static void check_compile_errors(GLuint shader, char *type)
 
 char* read_shader_source(const char* file_path)
 {
-    FILE* file = fopen(file_path, "r");
-    if (!file) {
-        fprintf(stderr, "Failed to open shader file: %s\n", file_path);
-        return NULL;
+    FILE *f;
+    char *text;
+    long len;
+
+    f = fopen(file_path, "rb");
+    if (f == NULL) {
+        fprintf(stderr, "Error loading shader at %s\n", file_path);
+        exit(1);
     }
 
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    fseek(f, 0, SEEK_END);
+    len = ftell(f);
+    assert(len > 0);
+    fseek(f, 0, SEEK_SET);
+    text = calloc(1, len);
+    assert(text != NULL);
+    fread(text, 1, len, f);
+    assert(strlen(text) > 0);
+    fclose(f);
 
-    char* source = (char*)malloc(length + 1);
-    if (!source) {
-        fprintf(stderr, "Failed to allocate memory for shader source.\n");
-        fclose(file);
-        return NULL;
-    }
-
-    fread(source, 1, length, file);
-    source[length] = '\0';
-
-    //printf("Shader source:\n%s\n", source); // Add this line for debug output
-
-    fclose(file);
-    return source;
+    return text;
 }
 
 Shader shader_create(const char* vertex_shader_path, const char* fragment_shader_path)

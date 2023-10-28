@@ -15,7 +15,7 @@ SOURCES = $(wildcard src/*.c)
 DEBUG_OBJECTS = $(patsubst src/%.c, bin/debug/%.o, $(SOURCES))
 RELEASE_OBJECTS = $(patsubst src/%.c, bin/release/%.o, $(SOURCES))
 
-DEBUG_EXECUTABLE = bin/debug/main.exe
+DEBUG_EXECUTABLE = bin\debug\main.exe
 RELEASE_EXECUTABLE = bin/release/main.exe
 
 all: debug release
@@ -37,7 +37,7 @@ bin/release/%.o: src/%.c
 	gcc -c -std=c11 $(RELEASE_FLAGS) $< -o $@
 
 clean:
-    del /Q bin\debug\*.o
+	 del /Q bin\debug\*.o $(DEBUG_EXECUTABLE)
 
 run-debug: $(DEBUG_EXECUTABLE)
 	$(DEBUG_RUN_COMMAND)

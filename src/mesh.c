@@ -11,7 +11,7 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
     
     mesh->num_vertices = num_vertices;
     mesh->num_indices = num_indices;
-    mesh->num_textures = num_textures;
+     mesh->num_textures = num_textures;
     
     glGenVertexArrays(1, &mesh->VAO);
     glGenBuffers(1, &mesh->VBO);

@@ -1,48 +1,11 @@
-#include "model.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "gfx/stb_image.h"
-
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-static Texture texture_from_file(const char* filename, const char* typeName);
+#include "model.h"
+
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model);
 static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene);
-
-static Texture texture_from_file(const char* filename, const char* typeName) {
-    Texture texture = {0};
-
-    int width, height, numChannels;
-    unsigned char* imageData = stbi_load(filename, &width, &height, &numChannels, 0);
-    if (!imageData) {
-        fprintf(stderr, "Failed to load texture from file: %s\n", filename);
-        return texture;
-    }
-
-    glGenTextures(1, &texture.id);
-    glBindTexture(GL_TEXTURE_2D, texture.id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    GLenum format = (numChannels == 1) ? GL_RED : (numChannels == 3) ? GL_RGB : GL_RGBA;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    stbi_image_free(imageData);
-    
-    strncpy(texture.type, typeName, sizeof(texture.type) - 1);
-    texture.type[sizeof(texture.type) - 1] = '\0';
-    strncpy(texture.path, filename, sizeof(texture.path) - 1);
-    texture.path[sizeof(texture.path) - 1] = '\0';
-
-    return texture;
-}
-
 
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model)
 {
@@ -75,7 +38,8 @@ static void process_node(struct aiNode *node, const struct aiScene *scene, Model
     }
 }
 
-static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
+static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene)
+{
     if (!ai_mesh->mVertices || !ai_mesh->mNumVertices || !ai_mesh->mFaces || !ai_mesh->mNumFaces) {
         return NULL;
     }
@@ -96,6 +60,7 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
         {aiTextureType_DIFFUSE, "texture_diffuse1"},
         {aiTextureType_HEIGHT, "texture_specular1"},
         {aiTextureType_OPACITY, "texture_opacity1"},
+        {aiTextureType_NORMALS, "texture_normal1"},
     };
 
     Texture* textures = NULL;
@@ -110,7 +75,7 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene) {
 
             if (AI_SUCCESS == aiGetMaterialTexture(material, textureType, 0, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
                 textures = realloc(textures, (num_textures + 1) * sizeof(Texture));
-                textures[num_textures] = texture_from_file(path.data, textureTypeMap[i].uniformName);
+                textures[num_textures] = load_model_texture(path.data, textureTypeMap[i].uniformName);
                 num_textures++;
             }
         }
