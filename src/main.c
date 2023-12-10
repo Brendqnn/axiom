@@ -74,7 +74,7 @@ int main(void)
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *tree = load_model("res/Prunus_Pendula.obj");
+    Model *tree = load_model("assets/source/Japanese Themed Pathway Sketchfab.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -86,8 +86,8 @@ int main(void)
         camera_update(&camera, window, delta_time);
 
         glm_mat4_identity(model);
-        glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
-        //glm_translate(tree_m, (vec3){20.0f, 0.0f, 0.0f}); // Translate before scaling
+        glm_scale(model, (vec3){0.1f, 0.1f, 0.1f}); // Adjust the scaling factors accordingly
+
 
         glUseProgram(shader.ID);
         camera_get_view_matrix(&camera, view);

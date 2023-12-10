@@ -40,10 +40,22 @@ void draw_mesh(Mesh* mesh, Shader shader)
     for (unsigned int i = 0; i < mesh->num_textures; i++) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
-        glUniform1i(glGetUniformLocation(shader.ID, mesh->textures[i].type), i);
+
+        char uniformName[64];
+        snprintf(uniformName, sizeof(uniformName), "%s", mesh->textures[i].type);
+
+        GLint uniformLocation = glGetUniformLocation(shader.ID, uniformName);
+
+        if (uniformLocation == -1) {
+            fprintf(stderr, "Uniform location not found for %s\n", uniformName);
+        } else {
+            glUniform1i(uniformLocation, i);
+        }
     }
 
+    // Reset to default texture unit
     glActiveTexture(GL_TEXTURE0);
+
     glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
