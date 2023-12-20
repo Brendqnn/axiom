@@ -1,35 +1,12 @@
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <stdbool.h>
 
 #include "model.h"
 
-#define MAX_LOADED_TEXTURES 100
-static char loadedTexturePaths[MAX_LOADED_TEXTURES][256]; // Adjust the size as needed
-static int numLoadedTextures = 0;
-
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model);
 static Mesh* process_mesh(struct aiMesh *ai_mesh, const struct aiScene *scene);
-
-static int isTextureLoaded(const char* path)
-{
-    for (int i = 0; i < numLoadedTextures; i++) {
-        if (strcmp(loadedTexturePaths[i], path) == 0) {
-            return 1; // Texture is already loaded
-        }
-    }
-    return 0; // Texture is not loaded
-}
-
-static void addLoadedTexture(const char* path)
-{
-    if (numLoadedTextures < MAX_LOADED_TEXTURES) {
-        strcpy(loadedTexturePaths[numLoadedTextures], path);
-        numLoadedTextures++;
-    } else {
-        fprintf(stderr, "Maximum number of loaded textures reached.\n");
-    }
-}
 
 static void process_node(struct aiNode *node, const struct aiScene *scene, Model *model)
 {
@@ -77,46 +54,6 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene)
         return NULL;
     }
 
-    struct {
-        enum aiTextureType type;
-        const char* uniformName;
-    } textureTypeMap[] = {
-        {aiTextureType_DIFFUSE, "texture_diffuse1"},
-        {aiTextureType_HEIGHT, "texture_specular1"},
-        {aiTextureType_OPACITY, "texture_opacity1"},
-        {aiTextureType_NORMALS, "texture_normal1"},
-    };
-
-    Texture* textures = NULL;
-    int num_textures = 0;
-
-    if (ai_mesh->mMaterialIndex >= 0) {
-        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
-
-        for (size_t i = 0; i < sizeof(textureTypeMap) / sizeof(textureTypeMap[0]); i++) {
-            struct aiString path;
-            enum aiTextureType textureType = textureTypeMap[i].type;
-
-            if (AI_SUCCESS == aiGetMaterialTexture(material, textureType, 0, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                if (!isTextureLoaded(path.data)) {
-                    textures = realloc(textures, (num_textures + 1) * sizeof(Texture));
-
-                    if (!textures) {
-                        fprintf(stderr, "Failed to allocate memory for textures.\n");
-                        free(vertices);
-                        free(indices);
-                        return NULL;
-                    }
-
-                    textures[num_textures] = load_model_texture(path.data, textureTypeMap[i].uniformName);
-                    num_textures++;
-
-                    addLoadedTexture(path.data);
-                } 
-            }
-        }
-    }
-
     for (unsigned int i = 0; i < ai_mesh->mNumVertices; i++) {
         vertices[i].position[0] = ai_mesh->mVertices[i].x;
         vertices[i].position[1] = ai_mesh->mVertices[i].y;
@@ -143,11 +80,31 @@ static Mesh* process_mesh(struct aiMesh* ai_mesh, const struct aiScene* scene)
         }
     }
 
+    Texture *textures;
+    int num_textures = 0;
+
+    if (ai_mesh->mMaterialIndex >= 0) {
+        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        unsigned int textureCount = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
+
+        if (textureCount > 0) {
+            textures = malloc(textureCount * sizeof(Texture));
+        
+            for (unsigned int i = 0; i < textureCount; i++) {
+                struct aiString path;
+
+                if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                    textures[i] = load_model_texture(path.data, "texture_diffuse1");
+                    num_textures++;
+                }
+            }
+        }
+    }
+
     Mesh* mesh = create_mesh(vertices, ai_mesh->mNumVertices, indices, indexCount, textures, num_textures);
 
     return mesh;
 }
-
 
 Model* load_model(const char* model_path)
 {
@@ -174,16 +131,7 @@ Model* load_model(const char* model_path)
 void draw_model(Model *model, Shader shader)
 {
     for (unsigned int i = 0; i < model->num_meshes; i++) {
-        Mesh* currentMesh = model->meshes[i];
-
-        // Activate and bind textures
-        for (int j = 0; j < currentMesh->num_textures; j++) {
-            glActiveTexture(GL_TEXTURE0 + j);
-            glBindTexture(GL_TEXTURE_2D, currentMesh->textures[j].id);
-            glUniform1i(glGetUniformLocation(shader.ID, currentMesh->textures[j].type), j);
-        }
-
-        draw_mesh(currentMesh, shader);
+        draw_mesh(model->meshes[i], shader);
     }
 }
 

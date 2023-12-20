@@ -11,7 +11,7 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
     
     mesh->num_vertices = num_vertices;
     mesh->num_indices = num_indices;
-     mesh->num_textures = num_textures;
+    mesh->num_textures = num_textures;
     
     glGenVertexArrays(1, &mesh->VAO);
     glGenBuffers(1, &mesh->VBO);
@@ -27,35 +27,26 @@ Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
     glEnableVertexAttribArray(1);	
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+
+    glEnableVertexAttribArray(2);	
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_coords));
+
+    glBindVertexArray(0);
 
     return mesh;
 }
 
-void draw_mesh(Mesh* mesh, Shader shader)
+void draw_mesh(Mesh *mesh, Shader shader)
 {
-    glBindVertexArray(mesh->VAO);
-
-    for (unsigned int i = 0; i < mesh->num_textures; i++) {
+    for (size_t i = 0; i < mesh->num_textures; i++) {
+        Texture texture = mesh->textures[i];
         glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
-
-        char uniformName[64];
-        snprintf(uniformName, sizeof(uniformName), "%s", mesh->textures[i].type);
-
-        GLint uniformLocation = glGetUniformLocation(shader.ID, uniformName);
-
-        if (uniformLocation == -1) {
-            fprintf(stderr, "Uniform location not found for %s\n", uniformName);
-        } else {
-            glUniform1i(uniformLocation, i);
-        }
+        bind_texture(&texture);
     }
-
-    // Reset to default texture unit
-    glActiveTexture(GL_TEXTURE0);
-
+    glBindVertexArray(mesh->VAO); 
     glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }

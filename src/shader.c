@@ -95,6 +95,16 @@ Shader shader_create(const char* vertex_shader_path, const char* fragment_shader
     return self;
 }
 
+void shader_use(const Shader *shader)
+{
+    glUseProgram(shader->ID);
+}
+
+void shader_setint(const Shader *shader, const char* name, int value)
+{
+    glUniform1i(glGetUniformLocation(shader->ID, name), value);
+}
+
 void shader_destroy(Shader *shader)
 {
     glDeleteProgram(shader->ID);

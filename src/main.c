@@ -1,4 +1,4 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 
 #include <GL/glew.h>
@@ -34,7 +34,7 @@ int main(void)
         return -1;
     }
     
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom.exe", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
@@ -74,7 +74,7 @@ int main(void)
     
     glfwSetCursorPos(window, center_x, center_y);
 
-    Model *tree = load_model("assets/source/Japanese Themed Pathway Sketchfab.obj");
+    Model *model_t = load_model("assets/Prunus_Pendula.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -86,20 +86,20 @@ int main(void)
         camera_update(&camera, window, delta_time);
 
         glm_mat4_identity(model);
-        glm_scale(model, (vec3){0.1f, 0.1f, 0.1f}); // Adjust the scaling factors accordingly
-
+        glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
 
         glUseProgram(shader.ID);
+
         camera_get_view_matrix(&camera, view);
 
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        draw_model(tree, shader);
+        draw_model(model_t, shader);
         
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            destroy_model(tree, shader);
+            destroy_model(model_t, shader);
             exit(1);
         }
         

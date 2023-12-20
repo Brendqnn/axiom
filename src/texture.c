@@ -3,7 +3,7 @@
 #include "gfx/stb_image.h"
 
 
-Texture texture_load(const char* filename) // Use this function to load images regularly
+Texture texture_load(const char* filename)
 {
     Texture texture;
     memset(&texture, 0, sizeof(Texture));
@@ -18,10 +18,10 @@ Texture texture_load(const char* filename) // Use this function to load images r
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_2D, texture.id);
 
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     GLenum format = (num_channels == 1) ? GL_RED : (num_channels == 3) ? GL_RGB : GL_RGBA;
     
@@ -65,6 +65,7 @@ Texture load_model_texture(const char* filename, const char* type_name)
         stbi_image_free(data);
         
     } else {
+        fprintf(stderr, "Failed to load texture: %s\n", filename);
         stbi_image_free(data);
     }
     
