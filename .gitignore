@@ -3,7 +3,7 @@
 *.mp4
 *.txt
 
-/res/
+/assets/
 
 # emacs
 
