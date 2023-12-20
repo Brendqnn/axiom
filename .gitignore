@@ -3,7 +3,7 @@
 *.mp4
 *.txt
 
-/assets
+/assets/
 
 # Prerequisites
 *.d
