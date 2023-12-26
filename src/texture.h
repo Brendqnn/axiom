@@ -11,7 +11,7 @@
 typedef struct {
     unsigned int id;
     char type[32];
-    char path[128];
+    char path[128];    
 } Texture;
 
 Texture load_texture(const char* filename);

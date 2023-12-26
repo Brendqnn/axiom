@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <GL/glew.h>
@@ -6,8 +6,9 @@
 #include <cglm/cglm.h>
 
 #include "camera.h"
-#include "util/util.h"
+#include "shader.h"
 #include "model.h"
+#include "mesh.h"
 
 void calculate_fps()
 {
@@ -47,11 +48,13 @@ int main(void)
         glfwTerminate();
         return -1;
     }
+
+    Model model_t = load_model("assets/Prunus_Pendula.obj");
     
     Shader shader = shader_create("src/gfx/default.vert", "src/gfx/default.frag");
 
     Camera camera;
-    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV, 10);
+    camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV);
 
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1); // Enable VSync
@@ -73,8 +76,6 @@ int main(void)
     double center_y = WINDOW_HEIGHT / 2;
     
     glfwSetCursorPos(window, center_x, center_y);
-
-    Model *model_t = load_model("assets/Prunus_Pendula.obj");
     
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -88,7 +89,7 @@ int main(void)
         glm_mat4_identity(model);
         glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
 
-        glUseProgram(shader.ID);
+        shader_use(&shader);
 
         camera_get_view_matrix(&camera, view);
 
@@ -96,10 +97,10 @@ int main(void)
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
 
-        draw_model(model_t, shader);
+        //draw_model(model_t, shader);
         
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            destroy_model(model_t, shader);
+            //destroy_model(model_t, shader);
             exit(1);
         }
         

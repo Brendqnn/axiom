@@ -6,7 +6,7 @@
 #include <string.h>
 
 typedef struct Shader {
-    GLuint ID;
+    unsigned int ID;
 } Shader;
 
 Shader shader_create(const char* vs_src, const char* fs_src);

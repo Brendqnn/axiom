@@ -4,7 +4,10 @@
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 #define CAMERA_FOV 90.0f
-#define MAX_TEXTURES 100
+#define MAX_MESHES 120
+#define MAX_VERTICES 300000
+#define MAX_INDICES (MAX_VERTICES * 3)
+#define MAX_TEXTURES 50
 
 #define ARRAY_LEN(xs) sizeof(xs)/sizeof(xs[0])
 

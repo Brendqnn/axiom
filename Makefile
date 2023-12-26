@@ -1,6 +1,6 @@
-DEBUG_FLAGS = -Wall -I$(CGLM_INCLUDE_PATH) -I$(GLFW_INCLUDE_PATH) -I$(GLEW_INCLUDE_PATH) -IC:/sdk/Assimp/include -g
-RELEASE_FLAGS = -O3 
-LDFLAGS = -L$(GLFW_LIB_PATH) -L$(GLEW_LIB_PATH) -LC:/sdk/Assimp/lib/x64 -lglfw3 -lopengl32 -lgdi32 -luser32 -lglew32 -lassimp-vc143-mt
+DEBUG_FLAGS = -Wall -I$(CGLM_INCLUDE_PATH) -I$(GLFW_INCLUDE_PATH) -I$(GLEW_INCLUDE_PATH) -IC:/sdk/assimp/include -g
+RELEASE_FLAGS = -O3 -I$(CGLM_INCLUDE_PATH) -I$(GLFW_INCLUDE_PATH) -I$(GLEW_INCLUDE_PATH) -IC:/sdk/assimp/include
+LDFLAGS = -L$(GLFW_LIB_PATH) -L$(GLEW_LIB_PATH) -LC:/sdk/Assimp/lib/Debug -lglfw3 -lopengl32 -lgdi32 -luser32 -lglew32 -lassimp-vc143-mtd
 
 DEBUG_RUN_COMMAND = bin/debug/main.exe
 RELEASE_RUN_COMMAND = bin/release/main.exe
@@ -37,7 +37,7 @@ bin/release/%.o: src/%.c
 	gcc -c -std=c11 $(RELEASE_FLAGS) $< -o $@
 
 clean:
-	 del /Q bin\debug\*.o $(DEBUG_EXECUTABLE)
+	 del /Q bin\debug\*.o $(DEBUG_EXECUTABLE) 
 
 run-debug: $(DEBUG_EXECUTABLE)
 	$(DEBUG_RUN_COMMAND)

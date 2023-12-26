@@ -1,62 +1,46 @@
 #include "mesh.h"
 
-Mesh* create_mesh(Vertex* vertices, unsigned int num_vertices,
-                  unsigned int* indices, unsigned int num_indices, Texture *textures, unsigned int num_textures)
+Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
+                 unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures)
 {
-    Mesh* mesh = malloc(sizeof(Mesh));
+    Mesh mesh;
 
-    mesh->vertices = vertices;
-    mesh->indices = indices;
-    mesh->textures = textures;
+    memcpy(mesh.vertices, vertices, num_vertices * sizeof(Vertex));
+    memcpy(mesh.indices, indices, num_indices * sizeof(unsigned int));
+    memcpy(mesh.textures, textures, num_textures * sizeof(Texture));
+
+    mesh.num_vertices = num_vertices;
+    printf("num_vertices: %d\n", num_vertices);
+    mesh.num_indices = num_indices;
+    mesh.num_textures = num_textures;
+
+    /* glGenVertexArrays(1, &mesh.VAO); */
+    /* glGenBuffers(1, &mesh.VBO); */
+    /* glGenBuffers(1, &mesh.EBO); */
+
+    /* glBindVertexArray(mesh.VAO); */
+
+    /* glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO); */
+    /* glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * num_vertices, vertices, GL_STATIC_DRAW); */
+
+    /* glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO); */
+    /* glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * num_indices, indices, GL_STATIC_DRAW); */
+
+    /* glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position)); */
+    /* glEnableVertexAttribArray(0); */
+
+    /* glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normals)); */
+    /* glEnableVertexAttribArray(1); */
+
+    /* glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_coords)); */
+    /* glEnableVertexAttribArray(2); */
+
+    /* glBindVertexArray(0); */
     
-    mesh->num_vertices = num_vertices;
-    mesh->num_indices = num_indices;
-    mesh->num_textures = num_textures;
-    
-    glGenVertexArrays(1, &mesh->VAO);
-    glGenBuffers(1, &mesh->VBO);
-    glGenBuffers(1, &mesh->EBO);
-
-    glBindVertexArray(mesh->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, num_vertices * sizeof(Vertex), mesh->vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(unsigned int), mesh->indices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-
-    glEnableVertexAttribArray(1);	
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-
-    glEnableVertexAttribArray(2);	
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_coords));
-
-    glBindVertexArray(0);
-
     return mesh;
 }
 
-void draw_mesh(Mesh *mesh, Shader shader)
+void draw_mesh(Mesh mesh, Shader shader)
 {
-    for (size_t i = 0; i < mesh->num_textures; i++) {
-        Texture texture = mesh->textures[i];
-        glActiveTexture(GL_TEXTURE0 + i);
-        bind_texture(&texture);
-    }
-    glBindVertexArray(mesh->VAO); 
-    glDrawElements(GL_TRIANGLES, mesh->num_indices, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-}
-
-void destroy_mesh(Mesh* mesh)
-{
-    if (mesh == NULL) {
-        return;
-    }
-    free(mesh->vertices);
-    free(mesh->indices);
-    free(mesh);
+    
 }

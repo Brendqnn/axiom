@@ -4,10 +4,10 @@
 #include <assert.h>
 
 
-static void check_compile_errors(GLuint shader, char *type)
+static void check_compile_errors(unsigned int shader, char *type)
 {
-    GLint success;
-    GLchar infoLog[1024];
+    int success;
+    char infoLog[1024];
     if (strcmp(type, "VERTEX") == 0) {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
@@ -70,12 +70,12 @@ Shader shader_create(const char* vertex_shader_path, const char* fragment_shader
         return empty_shader;
     }
 
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vs_src, NULL);
     glCompileShader(vertex_shader);
     check_compile_errors(vertex_shader, "VERTEX");
 
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fs_src, NULL);
     glCompileShader(fragment_shader);
     check_compile_errors(fragment_shader, "FRAGMENT");
