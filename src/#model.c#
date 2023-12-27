@@ -10,7 +10,7 @@ Model load_model(const char* model_path)
         return model;
     }
 
-    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh));
+    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh)); // alloc enuff memory for meshes
     
     process_node(scene->mRootNode, scene, &model);
 
