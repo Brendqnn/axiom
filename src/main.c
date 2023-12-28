@@ -48,9 +48,9 @@ int main(void)
         return -1;
     }
 
-    Model model_t = load_model("assets/comical_bomb/scene.gltf");
+    Model model_t = load_model("assets/backpack/backpack.obj");
     
-    Shader shader = shader_create("src/gfx/test.vert", "src/gfx/test.frag");
+    Shader shader = shader_create("src/gfx/default.vert", "src/gfx/default.frag");
 
     Camera camera;
     camera_init(&camera, (vec3){0.0f, 0.0f, 3.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV);
@@ -87,6 +87,7 @@ int main(void)
 
         glm_mat4_identity(model);
         glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
+        //glm_translate(model, (vec3){1.0f, 0.0f, 0.0f});
 
         shader_use(&shader);
 

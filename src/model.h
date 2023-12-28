@@ -5,6 +5,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <stdbool.h>
+#include "util/util.h"
 
 #include "mesh.h"
 

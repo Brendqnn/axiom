@@ -4,7 +4,14 @@ Model load_model(const char* model_path)
 {
     Model model = { 0 };
     
-    const struct aiScene* scene = aiImportFile(model_path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const struct aiScene* scene = aiImportFile(model_path, aiProcess_Triangulate
+                                               | aiProcess_FlipUVs
+                                               | aiProcess_OptimizeMeshes
+                                               | aiProcess_SplitLargeMeshes
+                                               | aiProcess_OptimizeGraph
+                                               | aiProcess_JoinIdenticalVertices
+                                               | aiProcess_RemoveRedundantMaterials
+                                               );
     if (!scene) {
         fprintf(stderr, "Assimp error: %s\n", aiGetErrorString());
         return model;
@@ -69,6 +76,31 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         index_offset += face->mNumIndices;
     }
 
+    struct {
+        enum aiTextureType type;
+        const char* uniform;
+    } texture_map[] = {
+        {aiTextureType_DIFFUSE, "texture_diffuse1"},
+        {aiTextureType_HEIGHT, "texture_specular1"},
+        {aiTextureType_OPACITY, "texture_opacity1"},
+        {aiTextureType_NORMALS, "texture_normal1"},
+    };
+    
+    if (ai_mesh->mMaterialIndex >= 0) {
+        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        unsigned int texture_count = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
+
+        if (texture_count > 0) {
+            for (unsigned int i = 0; i < texture_count; i++) {                 
+                struct aiString path;
+                if (AI_SUCCESS == aiGetMaterialTexture(material, texture_map[i].type, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                    textures[i] = load_model_texture(path.data, texture_map[i].uniform);
+                    texture_count++;
+                }
+            }
+        }
+    }
+       
     processed_mesh = create_mesh(vertices, indices, textures, ai_mesh->mNumVertices, index_offset, 0);
     model->meshes[model->num_meshes++] = processed_mesh;
 }

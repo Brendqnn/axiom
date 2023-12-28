@@ -9,8 +9,7 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
         memcpy(mesh.vertices, vertices, num_vertices * sizeof(Vertex));
         mesh.num_vertices = num_vertices;
     } else {
-        fprintf(stderr, "Error: Number of vertices exceeds the maximum allowed size\n");
-        // Handle error appropriately, e.g., return an error code or exit
+         fprintf(stderr, "Error: Number of vertices exceeds the maximum allowed size\n");
     }
 
     if (num_indices <= MAX_INDICES) {
@@ -18,7 +17,6 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
         mesh.num_indices = num_indices;
     } else {
         fprintf(stderr, "Error: Number of indices exceeds the maximum allowed size\n");
-        // Handle error appropriately, e.g., return an error code or exit
     }
 
     if (num_textures <= MAX_TEXTURES) {
@@ -26,7 +24,6 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
         mesh.num_textures = num_textures;
     } else {
         fprintf(stderr, "Error: Number of textures exceeds the maximum allowed size\n");
-        // Handle error appropriately, e.g., return an error code or exit
     }
 
     glGenVertexArrays(1, &mesh.VAO);
@@ -59,10 +56,8 @@ void draw_mesh(Mesh mesh, Shader shader)
 {
     glBindVertexArray(mesh.VAO);
 
-    // Draw the mesh using indices (assuming you have an EBO)
     glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
 
-    // Unbind the VAO and shader program
     glBindVertexArray(0);
     glUseProgram(0);
 }

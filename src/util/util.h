@@ -3,8 +3,6 @@
 #define CAMERA_SENSITIVITY 0.5f
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
-#define CAMERA_FOV 90.0f
-
-
+#define CAMERA_FOV 45.0f
 #define ARRAY_LEN(xs) sizeof(xs)/sizeof(xs[0])
 
