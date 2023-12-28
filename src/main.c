@@ -87,7 +87,6 @@ int main(void)
 
         glm_mat4_identity(model);
         glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
-        //glm_translate(model, (vec3){1.0f, 0.0f, 0.0f});
 
         shader_use(&shader);
 
