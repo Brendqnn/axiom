@@ -100,7 +100,6 @@ int main(void)
         draw_model(model_t, shader);
         
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            //destroy_model(model_t, shader);
             exit(1);
         }
         
