@@ -17,7 +17,7 @@ Model load_model(const char* model_path)
         return model;
     }
 
-    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh)); // alloc enuff memory for meshes
+    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh)); // alloc henuff memory for meshes
     
     process_node(scene->mRootNode, scene, &model);
 
@@ -46,6 +46,9 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
     unsigned int indices[MAX_INDICES];
     Texture textures[MAX_TEXTURES];
 
+    Texture loaded_textures[MAX_TEXTURES];
+    int num_loaded_textures = 0;
+
     for (unsigned int i = 0; i < ai_mesh->mNumVertices; ++i) {
         Vertex vertex;
         vertex.position[0] = ai_mesh->mVertices[i].x;
@@ -63,7 +66,6 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
             vertex.tex_coords[0] = 0.0f;
             vertex.tex_coords[1] = 0.0f;
         }
-
         vertices[i] = vertex;
     }
     
@@ -74,31 +76,18 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
             indices[index_offset + j] = face->mIndices[j];
         }
         index_offset += face->mNumIndices;
-    }
-
-    struct {
-        enum aiTextureType type;
-        const char* uniform;
-    } texture_map[] = {
-        {aiTextureType_DIFFUSE, "texture_diffuse1"},
-        {aiTextureType_HEIGHT, "texture_specular1"},
-        {aiTextureType_OPACITY, "texture_opacity1"},
-        {aiTextureType_NORMALS, "texture_normal1"},
-    };
+    }    
     
     if (ai_mesh->mMaterialIndex >= 0) {
         struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
         unsigned int texture_count = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
-
-        if (texture_count > 0) {
-            for (unsigned int i = 0; i < texture_count; i++) {                 
-                struct aiString path;
-                if (AI_SUCCESS == aiGetMaterialTexture(material, texture_map[i].type, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                    textures[i] = load_model_texture(path.data, texture_map[i].uniform);
-                    texture_count++;
-                }
+        
+        for (unsigned int i = 0; i < texture_count; i++) {                 
+            struct aiString path;
+            if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                textures[i] = load_model_texture(path.data, "texture_diffuse1");
             }
-        }
+        }        
     }
        
     processed_mesh = create_mesh(vertices, indices, textures, ai_mesh->mNumVertices, index_offset, 0);

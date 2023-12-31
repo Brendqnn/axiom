@@ -16,6 +16,7 @@ typedef struct {
 
 Texture load_texture(const char* filename);
 Texture load_model_texture(const char* filename, const char* type_name);
+Texture load_cubemap_texture(const char* faces[6]);
 void bind_texture(Texture *texture);
 void unbind_texture(Texture *texture);
 void destroy_texture(Texture *texture);

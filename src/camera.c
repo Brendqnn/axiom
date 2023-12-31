@@ -38,54 +38,41 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
 {
     float velocity = camera->movement_speed * delta_time;
     vec3 movement = {0.0f, 0.0f, 0.0f}; // Initialize the movement vector.
-    
-    switch (glfwGetKey(window, GLFW_KEY_W)) {
-        case GLFW_PRESS:
-            glm_vec3_scale(camera->front, velocity, movement);
-            glm_vec3_add(camera->position, movement, camera->position);
-            break;
-        case GLFW_RELEASE:
-            // Handle something here idk yet
-            break;
-        default:
-            break;
+
+    // Forward movement
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        glm_vec3_scale(camera->front, velocity, movement);
+        glm_vec3_add(camera->position, movement, camera->position);
     }
 
-    switch (glfwGetKey(window, GLFW_KEY_S)) {
-        case GLFW_PRESS:
-            glm_vec3_scale(camera->front, velocity, movement);
-            glm_vec3_sub(camera->position, movement, camera->position);
-            break;
-        case GLFW_RELEASE:
-            
-            break;
-        default:
-            break;
+    // Backward movement
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        glm_vec3_scale(camera->front, velocity, movement);
+        glm_vec3_sub(camera->position, movement, camera->position);
     }
 
-    switch (glfwGetKey(window, GLFW_KEY_A)) {
-        case GLFW_PRESS:
-            glm_vec3_scale(camera->right, velocity, movement);
-            glm_vec3_sub(camera->position, movement, camera->position);
-            break;
-        case GLFW_RELEASE:
-            
-            break;
-        default:
-            break;
+    // Left movement
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        glm_vec3_scale(camera->right, velocity, movement);
+        glm_vec3_sub(camera->position, movement, camera->position);
     }
 
-    switch (glfwGetKey(window, GLFW_KEY_D)) {
-        case GLFW_PRESS:
-            glm_vec3_scale(camera->right, velocity, movement);
-            glm_vec3_add(camera->position, movement, camera->position);
-            break;
-        case GLFW_RELEASE:
-            
-            break;
-        default:
-            break;
+    // Right movement
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        glm_vec3_scale(camera->right, velocity, movement);
+        glm_vec3_add(camera->position, movement, camera->position);
     }
+
+    // Ensure the camera stays within the boundaries of the skybox
+    float skyboxSize = 10.0f; // Adjust this based on your skybox size
+    float halfSkyboxSize = skyboxSize / 2.0f;
+
+    if (camera->position[0] < -halfSkyboxSize) camera->position[0] = -halfSkyboxSize;
+    if (camera->position[0] > halfSkyboxSize) camera->position[0] = halfSkyboxSize;
+    if (camera->position[1] < -halfSkyboxSize) camera->position[1] = -halfSkyboxSize;
+    if (camera->position[1] > halfSkyboxSize) camera->position[1] = halfSkyboxSize;
+    if (camera->position[2] < -halfSkyboxSize) camera->position[2] = -halfSkyboxSize;
+    if (camera->position[2] > halfSkyboxSize) camera->position[2] = halfSkyboxSize;
 }
 
 
@@ -154,3 +141,4 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
     
     glfwSetCursorPos(window, center_x, center_y);
 }
+

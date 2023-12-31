@@ -1,6 +1,6 @@
 # Axiom
 
-Axiom is a 3D graphics engine built on top of OpenGL, in C.
+Axiom is a 3D graphics engine.
 
 ## Features:
 

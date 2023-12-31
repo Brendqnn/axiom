@@ -22,8 +22,6 @@ typedef struct Camera {
     
     double last_x;
     double last_y;
-
-    int render_distance;
 } Camera;
 
 void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov);
