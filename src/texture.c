@@ -80,22 +80,21 @@ Texture load_model_texture(const char* filename, const char* type_name)
 Texture load_cubemap_texture(const char* faces[6])
 {
     Texture texture;
-    memset(&texture, 0, sizeof(Texture));
-
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
 
     for (int i = 0; i < 6; ++i) {
         int width, height, num_channels;
-        unsigned char* image_data = stbi_load(faces[i], &width, &height, &num_channels, 0);
-        if (!image_data) {
+        unsigned char* data = stbi_load(faces[i], &width, &height, &num_channels, 0);
+        if (data) {
+            stbi_set_flip_vertically_on_load(true);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_set_flip_vertically_on_load(false);
+            stbi_image_free(data);            
+        } else {
             fprintf(stderr, "Failed to load texture: %s\n", faces[i]);
             return texture;
         }
-        stbi_set_flip_vertically_on_load(false);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data);
-
-        stbi_image_free(image_data);
     }
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -104,11 +103,8 @@ Texture load_cubemap_texture(const char* faces[6])
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    strcpy(texture.type, "skybox");
-
     return texture;
 }
-
 
 void bind_texture(Texture *texture)
 {

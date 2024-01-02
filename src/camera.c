@@ -16,16 +16,17 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->last_x = 0.0;
     camera->last_y = 0.0;
 
-    vec3 front;
-    front[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
-    front[1] = sin(glm_rad(pitch));
-    front[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
-    glm_vec3_normalize_to(front, camera->front);
+    // Calculate orientation vector
+    camera->orientation[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
+    camera->orientation[1] = sin(glm_rad(pitch));
+    camera->orientation[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
 
-    glm_vec3_cross(camera->front, camera->world_up, camera->right);
+    glm_vec3_normalize(camera->orientation);
+
+    glm_vec3_cross(camera->orientation, camera->world_up, camera->right);
     glm_vec3_normalize(camera->right);
 
-    glm_vec3_cross(camera->right, camera->front, camera->up);
+    glm_vec3_cross(camera->right, camera->orientation, camera->up);
     glm_vec3_normalize(camera->up);
 }
 
@@ -62,19 +63,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
         glm_vec3_scale(camera->right, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
-
-    // Ensure the camera stays within the boundaries of the skybox
-    float skyboxSize = 10.0f; // Adjust this based on your skybox size
-    float halfSkyboxSize = skyboxSize / 2.0f;
-
-    if (camera->position[0] < -halfSkyboxSize) camera->position[0] = -halfSkyboxSize;
-    if (camera->position[0] > halfSkyboxSize) camera->position[0] = halfSkyboxSize;
-    if (camera->position[1] < -halfSkyboxSize) camera->position[1] = -halfSkyboxSize;
-    if (camera->position[1] > halfSkyboxSize) camera->position[1] = halfSkyboxSize;
-    if (camera->position[2] < -halfSkyboxSize) camera->position[2] = -halfSkyboxSize;
-    if (camera->position[2] > halfSkyboxSize) camera->position[2] = halfSkyboxSize;
 }
-
 
 void camera_process_mouse(Camera* camera, double x_offset, double y_offset)
 {
