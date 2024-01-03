@@ -16,7 +16,6 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->last_x = 0.0;
     camera->last_y = 0.0;
 
-    // Calculate orientation vector
     camera->orientation[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
     camera->orientation[1] = sin(glm_rad(pitch));
     camera->orientation[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
@@ -40,25 +39,22 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
     float velocity = camera->movement_speed * delta_time;
     vec3 movement = {0.0f, 0.0f, 0.0f}; // Initialize the movement vector.
 
-    // Forward movement
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         glm_vec3_scale(camera->front, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
 
-    // Backward movement
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         glm_vec3_scale(camera->front, velocity, movement);
         glm_vec3_sub(camera->position, movement, camera->position);
     }
 
-    // Left movement
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         glm_vec3_scale(camera->right, velocity, movement);
         glm_vec3_sub(camera->position, movement, camera->position);
     }
 
-    // Right movement
+   
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         glm_vec3_scale(camera->right, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
