@@ -3,13 +3,13 @@
 Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
                  unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures)
 {
-     Mesh mesh;
+    Mesh mesh;
 
-     if (num_vertices <= MAX_VERTICES) {
+    if (num_vertices <= MAX_VERTICES) {
         memcpy(mesh.vertices, vertices, num_vertices * sizeof(Vertex));
         mesh.num_vertices = num_vertices;
     } else {
-         fprintf(stderr, "Error: Number of vertices exceeds the maximum allowed size\n");
+        fprintf(stderr, "Error: Number of vertices exceeds the maximum allowed size\n");
     }
 
     if (num_indices <= MAX_INDICES) {
@@ -63,7 +63,4 @@ void draw_mesh(Mesh mesh, Shader shader)
     glActiveTexture(GL_TEXTURE0);
     
     glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
-    glUseProgram(0);
 }

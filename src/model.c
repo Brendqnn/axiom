@@ -11,6 +11,7 @@ Model load_model(const char* model_path)
                                                | aiProcess_OptimizeGraph
                                                | aiProcess_JoinIdenticalVertices
                                                | aiProcess_RemoveRedundantMaterials
+                                               | aiProcess_FindInstances
                                                );
     if (!scene) {
         fprintf(stderr, "Assimp error: %s\n", aiGetErrorString());
@@ -45,9 +46,6 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
     Vertex vertices[MAX_VERTICES];
     unsigned int indices[MAX_INDICES];
     Texture textures[MAX_TEXTURES];
-
-    Texture loaded_textures[MAX_TEXTURES];
-    int num_loaded_textures = 0;
 
     for (unsigned int i = 0; i < ai_mesh->mNumVertices; ++i) {
         Vertex vertex;
@@ -100,4 +98,3 @@ void draw_model(Model model, Shader shader)
         draw_mesh(model.meshes[i], shader);
     }
 }
-

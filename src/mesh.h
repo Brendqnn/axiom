@@ -8,8 +8,8 @@
 #include "shader.h"
 #include "texture.h"
 
-#define MAX_VERTICES 62000
-#define MAX_INDICES 212500
+#define MAX_VERTICES 68000
+#define MAX_INDICES 218500
 #define MAX_TEXTURES 50
 
 typedef struct {

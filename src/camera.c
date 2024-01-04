@@ -59,6 +59,10 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
         glm_vec3_scale(camera->right, velocity, movement);
         glm_vec3_add(camera->position, movement, camera->position);
     }
+ 
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        exit(1);
+    }
 }
 
 void camera_process_mouse(Camera* camera, double x_offset, double y_offset)

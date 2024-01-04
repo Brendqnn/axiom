@@ -106,6 +106,18 @@ Texture load_cubemap_texture(const char* faces[6])
     return texture;
 }
 
+Texture find_loaded_texture(Texture* textures, unsigned int num_textures, const char* path)
+{
+    for (unsigned int i = 0; i < num_textures; ++i) {
+        if (strcmp(textures[i].path, path) == 0) {
+            return textures[i];
+        }
+    }
+
+    Texture empty_texture = { 0 };
+    return empty_texture;
+}
+
 void bind_texture(Texture *texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture->id);
