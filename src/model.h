@@ -9,8 +9,6 @@
 
 #include "mesh.h"
 
-#define MAX_LOADED_TEXTURES 100
-
 typedef struct {
     Mesh *meshes;
     unsigned int num_meshes;

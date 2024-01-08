@@ -2,7 +2,7 @@
 
 Model load_model(const char* model_path)
 {
-    Model model = { 0 };
+    Model model = {0};
     
     const struct aiScene* scene = aiImportFile(model_path, aiProcess_Triangulate
                                                | aiProcess_FlipUVs
@@ -18,8 +18,7 @@ Model load_model(const char* model_path)
         return model;
     }
 
-    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh)); // alloc henuff memory for meshes
-    
+    model.meshes = malloc(scene->mNumMeshes * sizeof(Mesh));
     process_node(scene->mRootNode, scene, &model);
 
     aiReleaseImport(scene);
@@ -41,13 +40,27 @@ void process_node(const struct aiNode* node, const struct aiScene* scene, Model 
 
 void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Model *model)
 {
-    Mesh processed_mesh;
+    unsigned int num_vertices = ai_mesh->mNumVertices;
+    unsigned int num_indices = 0;
+    unsigned int num_textures = 0;
 
-    Vertex vertices[MAX_VERTICES];
-    unsigned int indices[MAX_INDICES];
-    Texture textures[MAX_TEXTURES];
+    for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
+        num_indices += ai_mesh->mFaces[i].mNumIndices;
+    }
 
-    for (unsigned int i = 0; i < ai_mesh->mNumVertices; ++i) {
+    Vertex* vertices = malloc(num_vertices * sizeof(Vertex));
+    unsigned int* indices = malloc(num_indices * sizeof(unsigned int));
+    Texture* textures = malloc(num_textures * sizeof(Texture));
+
+    if (!vertices || !indices || !textures) {
+        fprintf(stderr, "Failed to allocate memory for mesh components\n");
+        free(vertices);
+        free(indices);
+        free(textures);
+        return;
+    }
+
+    for (unsigned int i = 0; i < num_vertices; ++i) {
         Vertex vertex;
         vertex.position[0] = ai_mesh->mVertices[i].x;
         vertex.position[1] = ai_mesh->mVertices[i].y;
@@ -66,30 +79,36 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         }
         vertices[i] = vertex;
     }
-    
-    unsigned int index_offset = 0;
+
+    unsigned int indexCount = 0;
     for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
-        const struct aiFace* face = &ai_mesh->mFaces[i];
-        for (unsigned int j = 0; j < face->mNumIndices; ++j) {
-            indices[index_offset + j] = face->mIndices[j];
+        struct aiFace face = ai_mesh->mFaces[i];
+        for (unsigned int k = 0; k < face.mNumIndices; ++k) {
+            indices[indexCount++] = face.mIndices[k];
         }
-        index_offset += face->mNumIndices;
-    }    
-    
+    }
+
     if (ai_mesh->mMaterialIndex >= 0) {
         struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
-        unsigned int texture_count = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
-        
-        for (unsigned int i = 0; i < texture_count; i++) {                 
-            struct aiString path;
-            if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                textures[i] = load_model_texture(path.data, "texture_diffuse1");
+        unsigned int textureCount = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
+        if (textureCount > 0) {
+            textures = malloc(textureCount * sizeof(Texture));
+            for (unsigned int i = 0; i < textureCount; ++i) {
+                struct aiString path;
+                if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                    textures[i] = load_model_texture(path.data, "texture_diffuse1");
+                    num_textures++;
+                }
             }
-        }        
+        }
     }
-       
-    processed_mesh = create_mesh(vertices, indices, textures, ai_mesh->mNumVertices, index_offset, 0);
+
+    Mesh processed_mesh = create_mesh(vertices, indices, textures, num_vertices, num_indices, num_textures);
     model->meshes[model->num_meshes++] = processed_mesh;
+
+    free(vertices);
+    free(indices);
+    free(textures);
 }
 
 void draw_model(Model model, Shader shader)

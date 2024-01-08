@@ -8,10 +8,6 @@
 #include "shader.h"
 #include "texture.h"
 
-#define MAX_VERTICES 68000
-#define MAX_INDICES 218500
-#define MAX_TEXTURES 50
-
 typedef struct {
     float position[3];
     float normals[3];
@@ -19,15 +15,15 @@ typedef struct {
 } Vertex;
 
 typedef struct {
-    Vertex vertices[MAX_VERTICES];    
-    unsigned int indices[MAX_INDICES];   
-    Texture textures[MAX_TEXTURES];
-
     unsigned int num_vertices;
     unsigned int num_indices;
     unsigned int num_textures;
     
     unsigned int VAO, VBO, EBO;
+  
+    unsigned int *indices;   
+    Texture *textures;
+    Vertex *vertices;  
 } Mesh;
 
 /**

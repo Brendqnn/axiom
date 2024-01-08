@@ -123,8 +123,8 @@ int main(void)
 
     Texture cubemap = load_cubemap_texture(skybox_face_paths);
 
-    Model model_t = load_model("assets/backpack/backpack.obj");
-    //Model model_t = load_model("assets/Prunus_Pendula.obj");
+    //Model model_t = load_model("assets/backpack/backpack.obj");
+    Model model_t = load_model("assets/tree/Prunus_Pendula.obj");
     
     Shader shader = shader_create("src/gfx/default.vert", "src/gfx/default.frag");
     Shader skybox = shader_create("src/gfx/skybox.vert", "src/gfx/skybox.frag");
@@ -149,8 +149,8 @@ int main(void)
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     
-    double center_x = WINDOW_WIDTH / 2;
-    double center_y = WINDOW_HEIGHT / 2;
+    double center_x = WINDOW_WIDTH/2;
+    double center_y = WINDOW_HEIGHT/2;
     
     glfwSetCursorPos(window, center_x, center_y);
 
@@ -192,8 +192,6 @@ int main(void)
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS);
-
-        draw_model(model_t, shader);
        
         calculate_fps();
         glfwSwapBuffers(window);
