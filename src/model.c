@@ -11,7 +11,6 @@ Model load_model(const char* model_path)
                                                | aiProcess_OptimizeGraph
                                                | aiProcess_JoinIdenticalVertices
                                                | aiProcess_RemoveRedundantMaterials
-                                               | aiProcess_FindInstances
                                                );
     if (!scene) {
         fprintf(stderr, "Assimp error: %s\n", aiGetErrorString());
@@ -50,9 +49,9 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
 
     Vertex* vertices = malloc(num_vertices * sizeof(Vertex));
     unsigned int* indices = malloc(num_indices * sizeof(unsigned int));
-    Texture* textures = malloc(num_textures * sizeof(Texture));
+    Texture *textures = NULL;
 
-    if (!vertices || !indices || !textures) {
+    if (!vertices || !indices) {
         fprintf(stderr, "Failed to allocate memory for mesh components\n");
         free(vertices);
         free(indices);
@@ -90,14 +89,13 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
 
     if (ai_mesh->mMaterialIndex >= 0) {
         struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
-        unsigned int textureCount = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
-        if (textureCount > 0) {
-            textures = malloc(textureCount * sizeof(Texture));
-            for (unsigned int i = 0; i < textureCount; ++i) {
+        num_textures = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
+        if (num_textures > 0) {
+            textures = malloc(num_textures * sizeof(Texture));
+            for (unsigned int i = 0; i < num_textures; ++i) {
                 struct aiString path;
                 if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
                     textures[i] = load_model_texture(path.data, "texture_diffuse1");
-                    num_textures++;
                 }
             }
         }

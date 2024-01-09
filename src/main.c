@@ -29,11 +29,11 @@ void calculate_fps()
 }
 
 float skybox_vertices[] = {
-    -1.0f, -1.0f,  1.0f,//        7--------6
+    -1.0f, -1.0f,  1.0f,//       7--------6
     1.0f, -1.0f,  1.0f,//       /|       /|
     1.0f, -1.0f, -1.0f,//      4--------5 |
-    -1.0f, -1.0f, -1.0f,//      | |      | |
-    -1.0f,  1.0f,  1.0f,//      | 3------|-2
+    -1.0f, -1.0f, -1.0f,//     | |      | |
+    -1.0f,  1.0f,  1.0f,//     | 3------|-2
     1.0f,  1.0f,  1.0f,//      |/       |/
     1.0f,  1.0f, -1.0f,//      0--------1
     -1.0f,  1.0f, -1.0f
@@ -79,9 +79,9 @@ int main(void)
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);    
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
     
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom", NULL, NULL);
     if (!window) {
@@ -122,8 +122,7 @@ int main(void)
     };
 
     Texture cubemap = load_cubemap_texture(skybox_face_paths);
-
-    //Model model_t = load_model("assets/backpack/backpack.obj");
+    
     Model model_t = load_model("assets/tree/Prunus_Pendula.obj");
     
     Shader shader = shader_create("src/gfx/default.vert", "src/gfx/default.frag");
@@ -143,15 +142,13 @@ int main(void)
     glm_mat4_identity(projection);
 
     glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, projection);
-
     double previous_time = glfwGetTime();
     
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     
     double center_x = WINDOW_WIDTH/2;
-    double center_y = WINDOW_HEIGHT/2;
-    
+    double center_y = WINDOW_HEIGHT/2;    
     glfwSetCursorPos(window, center_x, center_y);
 
     while (!glfwWindowShouldClose(window)) {
