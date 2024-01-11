@@ -100,8 +100,8 @@ int main(void)
     }
 
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
 
     unsigned int skyboxVAO, skyboxVBO, skyboxEBO;
     glGenVertexArrays(1, &skyboxVAO);
@@ -165,44 +165,31 @@ int main(void)
         double current_time = glfwGetTime();
         float delta_time = current_time - previous_time;
         previous_time = current_time;
-
+        
         camera_update(&camera, window, delta_time);
         
         glm_mat4_identity(view);
         camera_get_view_matrix(&camera, view);
 
-        // Render Model
-        shader_use(&shader);
-        glm_mat4_identity(model);
-        vec3 scale = {0.2f, 0.2f, 0.2f};
-        glm_scale(model, scale);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
+        ImGui::Begin("Debug Window");
+    
+        ImGui::End();
 
-        draw_model(model_t, shader);
-
-        mat4 view_without_translation;
-        remove_translation_from_matrix(view, view_without_translation);
-
-        glDepthFunc(GL_LEQUAL);
-        shader_use(&skybox);
-
-        glUniformMatrix4fv(glGetUniformLocation(skybox.ID, "view"), 1, GL_FALSE, (float*)view_without_translation);
-        glUniformMatrix4fv(glGetUniformLocation(skybox.ID, "projection"), 1, GL_FALSE, (float*)projection);
-
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.id);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-        glDepthFunc(GL_LESS);
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
        
         calculate_fps();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     
     glfwTerminate();
     return 0;
