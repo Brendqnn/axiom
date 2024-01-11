@@ -8,14 +8,10 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
     mesh.num_vertices = num_vertices;
     mesh.num_indices = num_indices;
     mesh.num_textures = num_textures;
-    
-    mesh.vertices = malloc(num_vertices * sizeof(Vertex));
-    mesh.indices = malloc(num_indices * sizeof(unsigned int));
-    mesh.textures = malloc(num_textures * sizeof(Texture));
 
-    memcpy(mesh.vertices, vertices, num_vertices * sizeof(Vertex));
-    memcpy(mesh.indices, indices, num_indices * sizeof(unsigned int));
-    memcpy(mesh.textures, textures, num_textures * sizeof(Texture));
+    mesh.vertices = vertices;
+    mesh.indices = indices;
+    mesh.textures = textures;
 
     glGenVertexArrays(1, &mesh.VAO);
     glGenBuffers(1, &mesh.VBO);
@@ -40,13 +36,20 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
 
 void draw_mesh(Mesh mesh, Shader shader)
 {
-    for (size_t i = 0; i < mesh.num_textures; i++) {
-        Texture texture = mesh.textures[i];
+    shader_use(&shader);
+
+    for (unsigned int i = 0; i < mesh.num_textures; ++i)
+    {
         glActiveTexture(GL_TEXTURE0 + i);
-        bind_texture(&texture);
+        glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        char uniform_name[64];
+        snprintf(uniform_name, sizeof(uniform_name), "texture%d", i);
+        shader_setint(&shader, uniform_name, i);
     }
-    
-    glBindVertexArray(mesh.VAO); 
+
+    glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
+    glActiveTexture(GL_TEXTURE0);
 }

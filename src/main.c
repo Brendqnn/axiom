@@ -5,10 +5,14 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
 #include "camera.h"
 #include "shader.h"
 #include "model.h"
-#include "texture.h"
+
 
 void calculate_fps()
 {
@@ -62,11 +66,9 @@ unsigned int skybox_indices[] = {
 
 void remove_translation_from_matrix(mat4 input_matrix, mat4 output_matrix)
 {
-    // Extract upper-left 3x3 submatrix
     mat3 view_without_translation_mat3;
     glm_mat4_pick3(input_matrix, view_without_translation_mat3);
 
-    // Create a 4x4 matrix with the extracted 3x3 matrix
     glm_mat4_identity(output_matrix);
     glm_mat4_ins3(view_without_translation_mat3, output_matrix);
 }
@@ -96,6 +98,10 @@ int main(void)
         glfwTerminate();
         return -1;
     }
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
 
     unsigned int skyboxVAO, skyboxVBO, skyboxEBO;
     glGenVertexArrays(1, &skyboxVAO);
@@ -129,7 +135,9 @@ int main(void)
     Shader skybox = shader_create("src/gfx/skybox.vert", "src/gfx/skybox.frag");
 
     Camera camera;
-    camera_init(&camera, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, -90.0f, 0.0f, CAMERA_FOV);
+    vec3 position = {0.0f, 0.0f, 0.0f};
+    vec3 up = {0.0f, 1.0f, 0.0f};
+    camera_init(&camera, position, up, -90.0f, 0.0f, CAMERA_FOV);
 
     glEnable(GL_DEPTH_TEST);
     
@@ -166,7 +174,8 @@ int main(void)
         // Render Model
         shader_use(&shader);
         glm_mat4_identity(model);
-        glm_scale(model, (vec3){0.1f, 0.1f, 0.1f});
+        vec3 scale = {0.2f, 0.2f, 0.2f};
+        glm_scale(model, scale);
 
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);

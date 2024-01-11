@@ -17,7 +17,7 @@ Model load_model(const char* model_path)
         return model;
     }
 
-    model.meshes = malloc(scene->mNumMeshes * sizeof(Mesh));
+    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh));
     process_node(scene->mRootNode, scene, &model);
 
     aiReleaseImport(scene);
@@ -47,8 +47,8 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         num_indices += ai_mesh->mFaces[i].mNumIndices;
     }
 
-    Vertex* vertices = malloc(num_vertices * sizeof(Vertex));
-    unsigned int* indices = malloc(num_indices * sizeof(unsigned int));
+    Vertex* vertices = (Vertex*)malloc(num_vertices * sizeof(Vertex));
+    unsigned int* indices = (unsigned int*)malloc(num_indices * sizeof(unsigned int));
     Texture *textures = NULL;
 
     if (!vertices || !indices) {
@@ -91,7 +91,7 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
         num_textures = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
         if (num_textures > 0) {
-            textures = malloc(num_textures * sizeof(Texture));
+            textures = (Texture*)malloc(num_textures * sizeof(Texture));
             for (unsigned int i = 0; i < num_textures; ++i) {
                 struct aiString path;
                 if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
@@ -103,10 +103,6 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
 
     Mesh processed_mesh = create_mesh(vertices, indices, textures, num_vertices, num_indices, num_textures);
     model->meshes[model->num_meshes++] = processed_mesh;
-
-    free(vertices);
-    free(indices);
-    free(textures);
 }
 
 void draw_model(Model model, Shader shader)

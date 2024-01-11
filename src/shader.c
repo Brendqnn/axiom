@@ -4,7 +4,7 @@
 #include <assert.h>
 
 
-static void check_compile_errors(unsigned int shader, char *type)
+static void check_compile_errors(unsigned int shader, const char *type)
 {
     int success;
     char infoLog[1024];
@@ -47,7 +47,8 @@ char* read_shader_source(const char* file_path)
     len = ftell(f);
     assert(len > 0);
     fseek(f, 0, SEEK_SET);
-    text = calloc(1, len);
+
+    text = (char*)calloc(1, len);
     assert(text != NULL);
     fread(text, 1, len, f);
     assert(strlen(text) > 0);
