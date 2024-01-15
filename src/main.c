@@ -14,24 +14,6 @@
 #include "model.h"
 
 
-void calculate_fps()
-{
-    static double previous_time = 0.0;
-    static int frame_count = 0;
-
-    double current_time = glfwGetTime();
-    double elapsed_time = current_time - previous_time;
-    frame_count++;
-    
-    if (elapsed_time >= 1.0) {
-        double fps = frame_count / elapsed_time;
-        printf("FPS: %.00f\r", fps);
-        frame_count = 0;
-        previous_time = current_time;
-        fflush(stdout);
-    }
-}
-
 float skybox_vertices[] = {
     -1.0f, -1.0f,  1.0f,//       7--------6
     1.0f, -1.0f,  1.0f,//       /|       /|
@@ -64,6 +46,25 @@ unsigned int skybox_indices[] = {
     6, 2, 3
 };
 
+double calculate_fps(double previous_time)
+{
+    static double last_display_time = glfwGetTime();
+    static double fps = 0.0;
+    static int frame_count = 0;
+
+    double current_time = glfwGetTime();
+    double elapsed_time = current_time - last_display_time;
+    frame_count++;
+
+    if (elapsed_time >= 0.5) {
+        fps = frame_count / elapsed_time;
+        frame_count = 0;
+        last_display_time = current_time;
+    }
+
+    return fps;
+}
+
 void remove_translation_from_matrix(mat4 input_matrix, mat4 output_matrix)
 {
     mat3 view_without_translation_mat3;
@@ -83,7 +84,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);    
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 2);
     
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom", NULL, NULL);
     if (!window) {
@@ -171,18 +172,42 @@ int main(void)
         glm_mat4_identity(view);
         camera_get_view_matrix(&camera, view);
 
+        shader_use(&shader);
+        glm_mat4_identity(model);
+        vec3 scale_model = {0.1f, 0.1f, 0.1f};
+        glm_scale(model, scale_model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)projection);
+        draw_model(model_t, shader);
+        
+        mat4 view_without_translation;
+        remove_translation_from_matrix(view, view_without_translation);
+        glDepthFunc(GL_LEQUAL);
+        shader_use(&skybox);
+        glUniformMatrix4fv(glGetUniformLocation(skybox.ID, "view"), 1, GL_FALSE, (float*)view_without_translation);
+        glUniformMatrix4fv(glGetUniformLocation(skybox.ID, "projection"), 1, GL_FALSE, (float*)projection);
+        
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.id);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS);
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Debug Window");
+        ImGui::Begin("Debug");
+        double fps = calculate_fps(previous_time);
+        ImGui::Text("FPS: %.00f\r", fps);
     
         ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-       
-        calculate_fps();
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
