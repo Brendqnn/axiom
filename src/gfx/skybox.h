@@ -18,6 +18,6 @@ typedef struct {
 } Skybox;
 
 Skybox skybox_init(const char *skybox_faces[]);
-void skybox_render(Skybox skybox, Shader shader, Camera *camera);
+void skybox_render(Skybox skybox, Camera *camera);
 
 #endif // SKYBOX_H

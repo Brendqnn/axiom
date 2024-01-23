@@ -57,7 +57,7 @@ Skybox skybox_init(const char *skybox_faces[])
     return skybox;
 }
 
-void skybox_render(Skybox skybox, Shader shader, Camera *camera)
+void skybox_render(Skybox skybox, Camera *camera)
 {
     remove_translation_matrix(camera);
     glDepthFunc(GL_LEQUAL);

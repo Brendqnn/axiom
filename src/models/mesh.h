@@ -47,6 +47,6 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
  * @param mesh   The Mesh to be drawn.
  * @param shader The shader program to use for rendering.
  */
-void draw_mesh(Mesh mesh, Shader shader);
+void draw_mesh(Mesh mesh, Shader *shader);
 
 #endif // MESH_H

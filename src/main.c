@@ -26,7 +26,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);    
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 2);
+    //glfwWindowHint(GLFW_SAMPLES, 2);
     
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom", NULL, NULL);
     if (!window) {
@@ -76,7 +76,7 @@ int main(void)
     
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, cursor_position_callback);
-   
+    
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -87,14 +87,21 @@ int main(void)
         camera_update(&camera, window, delta_time);
         camera_get_view_matrix(&camera);
 
-        shader_use(&shader);
         glm_mat4_identity(camera.model);
+
+        vec3 translation_vector = {0.0f, 0.0f, -2.0f}; // Adjust the value as needed
+        glm_translate(camera.model, translation_vector);
+
         vec3 scale_model = {1.0f, 1.0f, 1.0f};
         glm_scale(camera.model, scale_model);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)camera.model);
+
+        draw_model(model_t, &shader);
+
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)camera.view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)camera.projection);
-        draw_model(model_t, shader);        
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)camera.model);
+
+        skybox_render(skybox, &camera);
         
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -103,14 +110,12 @@ int main(void)
         ImGui::Begin("Debug");
         double fps = calculate_fps(previous_time);
         ImGui::Text("FPS: %.00f\r", fps);
-    
+
         ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        skybox_render(skybox, shader, &camera);
-        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

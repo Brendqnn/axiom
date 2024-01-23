@@ -48,7 +48,7 @@ char* read_shader_source(const char* file_path)
     assert(len > 0);
     fseek(f, 0, SEEK_SET);
 
-    text = (char*)calloc(1, len);
+    text = (char*)calloc(1, len + 1);
     assert(text != NULL);
     fread(text, 1, len, f);
     assert(strlen(text) > 0);

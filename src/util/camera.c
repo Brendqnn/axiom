@@ -1,6 +1,7 @@
 #include "camera.h"
 #include <math.h>
 
+
 void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov)
 {
     glm_vec3_copy(position, camera->position);
@@ -16,21 +17,16 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->last_x = 0.0;
     camera->last_y = 0.0;
 
-    camera->orientation[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
-    camera->orientation[1] = sin(glm_rad(pitch));
-    camera->orientation[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
+    vec3 front;
+    front[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
+    front[1] = sin(glm_rad(pitch));
+    front[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
 
-    glm_vec3_normalize(camera->orientation);
-
-    glm_vec3_cross(camera->orientation, camera->world_up, camera->right);
+    glm_vec3_normalize_to(front, camera->front);
+    glm_vec3_cross(camera->front, camera->world_up, camera->right);
     glm_vec3_normalize(camera->right);
-
-    glm_vec3_cross(camera->right, camera->orientation, camera->up);
+    glm_vec3_cross(camera->right, camera->front, camera->up);
     glm_vec3_normalize(camera->up);
-
-    glm_mat4_identity(camera->model);
-    glm_mat4_identity(camera->view);
-    glm_mat4_identity(camera->projection);
 }
 
 void camera_update(Camera* camera, GLFWwindow* window, float delta_time)
@@ -41,7 +37,7 @@ void camera_update(Camera* camera, GLFWwindow* window, float delta_time)
 void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
 {
     float velocity = camera->movement_speed * delta_time;
-    vec3 movement = {0.0f, 0.0f, 0.0f};
+    vec3 movement = {0.0f, 0.0f, 0.0f}; // Initialize the movement vector.
     
     switch (glfwGetKey(window, GLFW_KEY_W)) {
         case GLFW_PRESS:
@@ -115,11 +111,10 @@ void camera_process_mouse(Camera* camera, double x_offset, double y_offset)
     front[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
     front[1] = sin(glm_rad(camera->pitch));
     front[2] = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-    glm_vec3_normalize_to(front, camera->front);
 
+    glm_vec3_normalize_to(front, camera->front);
     glm_vec3_cross(camera->front, camera->world_up, camera->right);
     glm_vec3_normalize(camera->right);
-
     glm_vec3_cross(camera->right, camera->front, camera->up);
     glm_vec3_normalize(camera->up);
 }
@@ -143,7 +138,6 @@ void remove_translation_matrix(Camera *camera)
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
     Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
-
     static bool firstMouse = true;
 
     if (firstMouse) {
@@ -154,7 +148,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 
     double center_x = WINDOW_WIDTH / 2;
     double center_y = WINDOW_HEIGHT / 2;
-
     double xoffset = xpos - center_x;
     double yoffset = center_y - ypos;
 
@@ -163,7 +156,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
     yoffset *= sensitivity;
 
     camera_process_mouse(camera, xoffset, yoffset);
-    
+
     glfwSetCursorPos(window, center_x, center_y);
 }
-

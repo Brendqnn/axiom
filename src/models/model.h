@@ -47,6 +47,6 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
  * @param model  The Model to be drawn.
  * @param shader The shader program to use for rendering.
  */
-void draw_model(Model model, Shader shader);
+void draw_model(Model model, Shader *shader);
 
 #endif // MODEL_H

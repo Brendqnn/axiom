@@ -35,17 +35,21 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
     return mesh;
 }
 
-void draw_mesh(Mesh mesh, Shader shader)
+void draw_mesh(Mesh mesh, Shader *shader)
 {
-    shader_use(&shader);
+    shader_use(shader);
 
     for (unsigned int i = 0; i < mesh.num_textures; ++i)
     {
+        printf("num_textures: %d\n", mesh.num_textures);
+        
+        char uniform_name[64];
+        snprintf(uniform_name, sizeof(uniform_name), "material.texture%d", i);
+
+        shader_setint(shader, uniform_name, i);
+
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
-        char uniform_name[64];
-        snprintf(uniform_name, sizeof(uniform_name), "texture%d", i);
-        shader_setint(&shader, uniform_name, i);
     }
 
     glBindVertexArray(mesh.VAO);
@@ -54,3 +58,4 @@ void draw_mesh(Mesh mesh, Shader shader)
 
     glActiveTexture(GL_TEXTURE0);
 }
+

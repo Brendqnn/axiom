@@ -6,14 +6,14 @@
 #include <cglm/cglm.h>
 #include "util.h"
 
+
 typedef struct {
     vec3 position;
     vec3 front;
     vec3 up;
     vec3 right;
     vec3 world_up;
-    vec3 orientation;
-
+    
     float yaw;
     float pitch;
     float movement_speed;
@@ -21,9 +21,9 @@ typedef struct {
     float fov;
 
     mat4 view, model, projection;
-
+    
     bool first_mouse;
-
+    
     double last_x;
     double last_y;
 } Camera;

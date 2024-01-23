@@ -3,7 +3,6 @@
 *.mp4
 *.txt
 *.ini
-/assets/
 
 # Prerequisites
 *.d
@@ -14,6 +13,10 @@
 *.o
 *.ko
 *.elf
+
+*.jpeg
+*.jpg
+*.png
 
 # Linker output
 *.ilk

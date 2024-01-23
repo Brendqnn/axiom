@@ -1,4 +1,12 @@
 #include "model.h"
+#include <pthread.h>
+
+
+typedef struct {
+    const struct aiMesh* ai_mesh;
+    const struct aiScene* scene;
+    Model* model;
+} MeshLoader;
 
 Model load_model(const char* model_path)
 {
@@ -87,15 +95,32 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         }
     }
 
+    struct {
+        enum aiTextureType type;
+        const char* uniform;
+    } texture_map[] = {
+        {aiTextureType_DIFFUSE, "texture_diffuse1"},
+        {aiTextureType_SPECULAR, "texture_specular1"},
+        {aiTextureType_NORMALS, "texture_normal1"}
+    };
+
     if (ai_mesh->mMaterialIndex >= 0) {
         struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
-        num_textures = aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE);
-        if (num_textures > 0) {
-            textures = (Texture*)malloc(num_textures * sizeof(Texture));
-            for (unsigned int i = 0; i < num_textures; ++i) {
-                struct aiString path;
-                if (AI_SUCCESS == aiGetMaterialTexture(material, aiTextureType_DIFFUSE, i, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                    textures[i] = load_model_texture(path.data, "texture_diffuse1");
+
+        for (unsigned int i = 0; i < ARRAY_LEN(texture_map); ++i) {
+            enum aiTextureType texture_type = texture_map[i].type;
+            const char* uniform_name = texture_map[i].uniform;
+
+            num_textures = aiGetMaterialTextureCount(material, texture_type);
+            printf("Number of %s textures for model: %d\n", uniform_name, num_textures);
+
+            if (num_textures > 0) {
+                textures = (Texture*)malloc(num_textures * sizeof(Texture));
+                for (unsigned int j = 0; j < num_textures; ++j) {
+                    struct aiString path;
+                    if (AI_SUCCESS == aiGetMaterialTexture(material, texture_type, j, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                        textures[j] = load_model_texture(path.data, uniform_name);
+                    }
                 }
             }
         }
@@ -105,7 +130,7 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
     model->meshes[model->num_meshes++] = processed_mesh;
 }
 
-void draw_model(Model model, Shader shader)
+void draw_model(Model model, Shader *shader)
 {
     for (unsigned int i = 0; i < model.num_meshes; i++) {
         draw_mesh(model.meshes[i], shader);
