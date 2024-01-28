@@ -1,35 +1,41 @@
 #include "model.h"
-#include <pthread.h>
 
 
-typedef struct {
-    const struct aiMesh* ai_mesh;
-    const struct aiScene* scene;
-    Model* model;
-} MeshLoader;
+Texture* load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name)
+{
+    unsigned int texture_count = aiGetMaterialTextureCount(material, texture_type);
+    if (texture_count == 0) {
+        return NULL;
+    }
+
+    Texture* textures = (Texture*)malloc(texture_count * sizeof(Texture));
+    for (unsigned int i = 0; i < texture_count; ++i) {
+        struct aiString texture_path;
+        if (aiGetMaterialTexture(material, texture_type, i, &texture_path, NULL, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
+            textures[i] = load_model_texture(texture_path.data, "texture_diffuse1");
+            textures[i].count = texture_count;
+        }
+    }
+    return textures;
+}
 
 Model load_model(const char* model_path)
 {
     Model model = {0};
     
-    const struct aiScene* scene = aiImportFile(model_path, aiProcess_Triangulate
-                                               | aiProcess_FlipUVs
-                                               | aiProcess_OptimizeMeshes
-                                               | aiProcess_SplitLargeMeshes
-                                               | aiProcess_OptimizeGraph
-                                               | aiProcess_JoinIdenticalVertices
-                                               | aiProcess_RemoveRedundantMaterials
-                                               );
+    const struct aiScene* scene = aiImportFile(model_path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_SplitLargeMeshes);
     if (!scene) {
         fprintf(stderr, "Assimp error: %s\n", aiGetErrorString());
         return model;
     }
 
+    printf("Number of meshes in model: %d\n", scene->mNumMeshes);
+
     model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh));
     process_node(scene->mRootNode, scene, &model);
 
     aiReleaseImport(scene);
-    
+
     return model;
 }
 
@@ -48,6 +54,7 @@ void process_node(const struct aiNode* node, const struct aiScene* scene, Model 
 void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Model *model)
 {
     unsigned int num_vertices = ai_mesh->mNumVertices;
+    printf("num vertices: %d\n", num_vertices);
     unsigned int num_indices = 0;
     unsigned int num_textures = 0;
 
@@ -55,36 +62,26 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         num_indices += ai_mesh->mFaces[i].mNumIndices;
     }
 
-    Vertex* vertices = (Vertex*)malloc(num_vertices * sizeof(Vertex));
+    Vertex* vertices = (Vertex*)calloc(num_vertices, sizeof(Vertex));
     unsigned int* indices = (unsigned int*)malloc(num_indices * sizeof(unsigned int));
     Texture *textures = NULL;
 
-    if (!vertices || !indices) {
-        fprintf(stderr, "Failed to allocate memory for mesh components\n");
-        free(vertices);
-        free(indices);
-        free(textures);
-        return;
-    }
-
     for (unsigned int i = 0; i < num_vertices; ++i) {
-        Vertex vertex;
-        vertex.position[0] = ai_mesh->mVertices[i].x;
-        vertex.position[1] = ai_mesh->mVertices[i].y;
-        vertex.position[2] = ai_mesh->mVertices[i].z;
+        vertices[i].position[0] = ai_mesh->mVertices[i].x;
+        vertices[i].position[1] = ai_mesh->mVertices[i].y;
+        vertices[i].position[2] = ai_mesh->mVertices[i].z;
 
-        vertex.normals[0] = ai_mesh->mNormals[i].x;
-        vertex.normals[1] = ai_mesh->mNormals[i].y;
-        vertex.normals[2] = ai_mesh->mNormals[i].z;
+        vertices[i].normals[0] = ai_mesh->mNormals[i].x;
+        vertices[i].normals[1] = ai_mesh->mNormals[i].y;
+        vertices[i].normals[2] = ai_mesh->mNormals[i].z;
 
         if (ai_mesh->mTextureCoords[0]) {
-            vertex.tex_coords[0] = ai_mesh->mTextureCoords[0][i].x;
-            vertex.tex_coords[1] = ai_mesh->mTextureCoords[0][i].y;
+            vertices[i].tex_coords[0] = ai_mesh->mTextureCoords[0][i].x;
+            vertices[i].tex_coords[1] = ai_mesh->mTextureCoords[0][i].y;
         } else {
-            vertex.tex_coords[0] = 0.0f;
-            vertex.tex_coords[1] = 0.0f;
+            vertices[i].tex_coords[0] = 0.0f;
+            vertices[i].tex_coords[1] = 0.0f;
         }
-        vertices[i] = vertex;
     }
 
     unsigned int indexCount = 0;
@@ -95,36 +92,13 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         }
     }
 
-    struct {
-        enum aiTextureType type;
-        const char* uniform;
-    } texture_map[] = {
-        {aiTextureType_DIFFUSE, "texture_diffuse1"},
-        {aiTextureType_SPECULAR, "texture_specular1"},
-        {aiTextureType_NORMALS, "texture_normal1"}
-    };
-
     if (ai_mesh->mMaterialIndex >= 0) {
         struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        Texture* diffuse_textures = load_material_textures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 
-        for (unsigned int i = 0; i < ARRAY_LEN(texture_map); ++i) {
-            enum aiTextureType texture_type = texture_map[i].type;
-            const char* uniform_name = texture_map[i].uniform;
-
-            num_textures = aiGetMaterialTextureCount(material, texture_type);
-            printf("Number of %s textures for model: %d\n", uniform_name, num_textures);
-
-            if (num_textures > 0) {
-                textures = (Texture*)malloc(num_textures * sizeof(Texture));
-                for (unsigned int j = 0; j < num_textures; ++j) {
-                    struct aiString path;
-                    if (AI_SUCCESS == aiGetMaterialTexture(material, texture_type, j, &path, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                        textures[j] = load_model_texture(path.data, uniform_name);
-                    }
-                }
-            }
-        }
-    }
+        num_textures += diffuse_textures ? diffuse_textures->count : 0;
+        textures = diffuse_textures;
+    } 
 
     Mesh processed_mesh = create_mesh(vertices, indices, textures, num_vertices, num_indices, num_textures);
     model->meshes[model->num_meshes++] = processed_mesh;
@@ -136,3 +110,4 @@ void draw_model(Model model, Shader *shader)
         draw_mesh(model.meshes[i], shader);
     }
 }
+

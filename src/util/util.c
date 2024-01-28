@@ -1,11 +1,14 @@
 #include "util.h"
 
-
 double calculate_fps(double previous_time)
 {
-    static double last_display_time = glfwGetTime();
+    static double last_display_time = 0.0;  // Initialize to 0.0
     static double fps = 0.0;
     static int frame_count = 0;
+
+    if (last_display_time == 0.0) {
+        last_display_time = glfwGetTime();
+    }
 
     double current_time = glfwGetTime();
     double elapsed_time = current_time - last_display_time;
@@ -19,3 +22,4 @@ double calculate_fps(double previous_time)
 
     return fps;
 }
+

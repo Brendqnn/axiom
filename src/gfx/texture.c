@@ -1,7 +1,8 @@
 #include "texture.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../gfx/stb_image.h"
+#include "../../lib/stb_image.h"
 
+// TODO: clean this shit up
 
 Texture texture_load(const char* filename)
 {
@@ -41,33 +42,26 @@ Texture load_model_texture(const char* filename, const char* type_name)
 
     glGenTextures(1, &texture.id);
 
-    int width, height, nrComponents;
+    int width, height, num_channels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(filename, &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, texture.id);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-        
-    } else {
+    unsigned char* data = stbi_load(filename, &width, &height, &num_channels, 0);
+    if (!data) {
         fprintf(stderr, "Failed to load texture: %s\n", filename);
         stbi_image_free(data);
     }
+
+    GLenum format = (num_channels == 1) ? GL_RED : (num_channels == 3) ? GL_RGB : GL_RGBA;
+
+    glBindTexture(GL_TEXTURE_2D, texture.id);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
     
     strncpy(texture.type, type_name, sizeof(texture.type) - 1);
     texture.type[sizeof(texture.type) - 1] = '\0';
@@ -89,7 +83,6 @@ Texture load_cubemap_texture(const char* faces[6])
         unsigned char* data = stbi_load(faces[i], &width, &height, &num_channels, 0);
         if (data) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            //stbi_set_flip_vertically_on_load(false);
             stbi_image_free(data);            
         } else {
             fprintf(stderr, "Failed to load texture: %s\n", faces[i]);
@@ -104,18 +97,6 @@ Texture load_cubemap_texture(const char* faces[6])
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return texture;
-}
-
-Texture find_loaded_texture(Texture* textures, unsigned int num_textures, const char* path)
-{
-    for (unsigned int i = 0; i < num_textures; ++i) {
-        if (strcmp(textures[i].path, path) == 0) {
-            return textures[i];
-        }
-    }
-
-    Texture empty_texture = { 0 };
-    return empty_texture;
 }
 
 void bind_texture(Texture *texture)

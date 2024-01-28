@@ -41,8 +41,6 @@ void draw_mesh(Mesh mesh, Shader *shader)
 
     for (unsigned int i = 0; i < mesh.num_textures; ++i)
     {
-        printf("num_textures: %d\n", mesh.num_textures);
-        
         char uniform_name[64];
         snprintf(uniform_name, sizeof(uniform_name), "material.texture%d", i);
 
@@ -58,4 +56,3 @@ void draw_mesh(Mesh mesh, Shader *shader)
 
     glActiveTexture(GL_TEXTURE0);
 }
-

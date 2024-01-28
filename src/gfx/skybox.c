@@ -1,49 +1,60 @@
 #include "skybox.h"
 
+// TODO: 
 
 Skybox skybox_init(const char *skybox_faces[])
 {
     Skybox skybox;
 
-    float vertices[] = {
-        -1.0f, -1.0f,  1.0f,//       7--------6
-        1.0f, -1.0f,  1.0f,//       /|       /|
-        1.0f, -1.0f, -1.0f,//      4--------5 |
-        -1.0f, -1.0f, -1.0f,//     | |      | |
-        -1.0f,  1.0f,  1.0f,//     | 3------|-2
-        1.0f,  1.0f,  1.0f,//      |/       |/
-        1.0f,  1.0f, -1.0f,//      0--------1
-        -1.0f,  1.0f, -1.0f
-    };
+    float vertices[] = { 
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
 
-    unsigned int indices[] = {
-        // Right
-        1, 2, 6,
-        6, 5, 1,
-        // Left
-        0, 4, 7,
-        7, 3, 0,
-        // Top
-        4, 5, 6,
-        6, 7, 4,
-        // Bottom
-        0, 3, 2,
-        2, 1, 0,
-        // Back
-        0, 1, 5,
-        5, 4, 0,
-        // Front
-        3, 7, 6,
-        6, 2, 3
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
     };
 
     skybox.vao = vao_create();
     skybox.vbo = vbo_create(GL_ARRAY_BUFFER, false);
-    skybox.ebo = ebo_create();
     
     vao_bind(skybox.vao);
     vbo_buffer(skybox.vbo, vertices, sizeof(vertices));
-    ebo_buffer(skybox.ebo, indices, sizeof(indices));
     link_attrib(skybox.vao, skybox.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -68,7 +79,7 @@ void skybox_render(Skybox skybox, Camera *camera)
     vao_bind(skybox.vao);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.cubemap.id);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     glDepthFunc(GL_LESS);
 }

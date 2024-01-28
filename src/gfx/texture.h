@@ -11,6 +11,7 @@ typedef struct {
     unsigned int id;
     char type[32];
     char path[128];
+    unsigned int count;
 } Texture;
 
 /**
