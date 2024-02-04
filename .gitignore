@@ -14,10 +14,6 @@
 *.ko
 *.elf
 
-*.jpeg
-*.jpg
-*.png
-
 # Linker output
 *.ilk
 *.map
