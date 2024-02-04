@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #define PI 3.14159265358979323846
-#define CAMERA_SPEED 1.0f
+#define MOVEMENT_SPEED 20.0f
 #define CAMERA_SENSITIVITY 1.0f
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080

@@ -3,11 +3,8 @@
 
 Axiom is a 3D graphics engine.
 
-## Features:
+![Alt text](res/preview.png)
 
-
-## Getting Started:
-- Don't.
 
 
 

@@ -14,7 +14,7 @@ uniform Material material;
 
 void main() {
     vec3 lightColor = vec3(1.0);
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+    vec3 lightDir = normalize(vec3(0.0, 1.0, 1.0));
     float diff = max(dot(normalize(Normal), lightDir), 0.0);
 
     vec4 textureColor = texture(material.texture_diffuse1, TexCoord);

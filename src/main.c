@@ -15,21 +15,44 @@
 #include "gfx/vbo.h"
 #include "gfx/ebo.h"
 
-#define TERRAIN_SIZE_X 50
-#define TERRAIN_SIZE_Z 50
-#define TERRAIN_SCALE 0.1f
+#define TERRAIN_HEIGHT 100
+#define TERRAIN_WIDTH 100
+#define TERRAIN_SCALE 100.0f
+#define PEAK_SCALE 2.0f
 
-void gen_terrain(float vertices[])
+void gen_terrain(float *vertices)
 {
-    float xstart = -TERRAIN_SIZE_X / 2.0f;
-    float zstart = -TERRAIN_SIZE_Z / 2.0f;
+    float xstart = -TERRAIN_HEIGHT/2.0f * TERRAIN_SCALE;
+    float zstart = -TERRAIN_WIDTH/2.0f * TERRAIN_SCALE;
 
-    for (int x = 0; x < TERRAIN_SIZE_X; ++x) {
-        for (int z = 0; z < TERRAIN_SIZE_Z; ++z) {
-            float height = noise2(x * 0.1f, z * 0.1f);
-            vertices[(x * TERRAIN_SIZE_Z + z) * 3] = xstart + x * TERRAIN_SCALE;
-            vertices[(x * TERRAIN_SIZE_Z + z) * 3 + 1] = height;
-            vertices[(x * TERRAIN_SIZE_Z + z) * 3 + 2] = zstart + z * TERRAIN_SCALE;
+    int index = 0;
+    for (int x = 0; x < TERRAIN_HEIGHT; ++x) {
+        for (int z = 0; z < TERRAIN_WIDTH; ++z) {
+            // Triangle 1
+            vertices[index++] = xstart + x * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * noise2(x * 0.1f, z * 0.1f) * TERRAIN_SCALE;
+            vertices[index++] = zstart + z * TERRAIN_SCALE;
+
+            vertices[index++] = xstart + (x + 1) * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * noise2((x + 1) * 0.1f, z * 0.1f) * TERRAIN_SCALE;
+            vertices[index++] = zstart + z * TERRAIN_SCALE;
+
+            vertices[index++] = xstart + x * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * noise2(x * 0.1f, (z + 1) * 0.1f) * TERRAIN_SCALE;
+            vertices[index++] = zstart + (z + 1) * TERRAIN_SCALE;
+
+            // Triangle 2
+            vertices[index++] = xstart + x * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * noise2(x * 0.1f, (z + 1) * 0.1f) * TERRAIN_SCALE;
+            vertices[index++] = zstart + (z + 1) * TERRAIN_SCALE;
+
+            vertices[index++] = xstart + (x + 1) * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * noise2((x + 1) * 0.1f, z * 0.1f) * TERRAIN_SCALE;
+            vertices[index++] = zstart + z * TERRAIN_SCALE;
+
+            vertices[index++] = xstart + (x + 1) * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * noise2((x + 1) * 0.1f, (z + 1) * 0.1f) * TERRAIN_SCALE;
+            vertices[index++] = zstart + (z + 1) * TERRAIN_SCALE;
         }
     }
 }
@@ -46,7 +69,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
     
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom v.1.11", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window.\n");
         glfwTerminate();
@@ -60,24 +83,20 @@ int main(void)
         return -1;
     }
 
-    int num_vertices = (TERRAIN_SIZE_X + 1) * (TERRAIN_SIZE_Z + 1);
+    //Texture land = load_texture("res/land.jpg");
 
-    float terrain_vertices[num_vertices * 3];
+    int num_vertices = TERRAIN_WIDTH * TERRAIN_HEIGHT * 6 * 3;
+    float terrain[num_vertices];
+    gen_terrain(terrain);
 
-    gen_terrain(terrain_vertices);
+    VAO terrain_vao = vao_create();
+    VBO terrain_vbo = vbo_create(GL_ARRAY_BUFFER, false);
+    
+    vao_bind(terrain_vao);
+    vbo_buffer(terrain_vbo, terrain, sizeof(terrain));
+    link_attrib(terrain_vao, terrain_vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
 
-    GLuint terrainVAO, terrainVBO;
-    glGenVertexArrays(1, &terrainVAO);
-    glGenBuffers(1, &terrainVBO);
-    glBindVertexArray(terrainVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(terrain_vertices), terrain_vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    const char* skybox_face_paths[6] = {
+   const char* skybox_face_paths[6] = { 
         "res/skybox/right.jpg",
         "res/skybox/left.jpg",
         "res/skybox/top.jpg",
@@ -89,13 +108,14 @@ int main(void)
     Model model_t = load_model("res/tree/Prunus_Pendula.gltf");
     
     Shader shader = shader_create("res/shaders/default.vert", "res/shaders/default.frag");
-    Shader test = shader_create("res/shaders/test.vert", "res/shaders/test.frag");
+    Shader test = shader_create("res/shaders/terrain.vert", "res/shaders/terrain.frag");
 
     Skybox skybox = skybox_init(skybox_face_paths);
 
     Camera camera;
-    vec3 position = {0.0f, 0.0f, 0.0f};
-    vec3 up = {0.0f, 1.0f, 0.0f};
+    vec3 position = {0.0f, 0.0f, 50.0f};
+    vec3 up = {0.0f, 10.0f, 0.0f};
+    
     camera_init(&camera, position, up, -90.0f, 0.0f, CAMERA_FOV);
 
     glEnable(GL_DEPTH_TEST);
@@ -103,12 +123,14 @@ int main(void)
     //glfwSwapInterval(1); // Enable VSync
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Disable cursor
 
-    glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f, camera.projection);
+    glm_perspective(glm_rad(camera.fov), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 3000.0f, camera.projection);
     double previous_time = glfwGetTime();
     
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, cursor_position_callback);
-    
+
+    mat4 model_model_mat, model_terrain_mat;
+
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -119,27 +141,33 @@ int main(void)
         camera_update(&camera, window, delta_time);
         camera_get_view_matrix(&camera);
 
-        glm_mat4_identity(camera.model);
+        glm_mat4_identity(model_model_mat);
 
-        vec3 translation_vector = {0.0f, 0.0f, -2.0f}; // Adjust the value as needed
-        glm_translate(camera.model, translation_vector);
+        vec3 translation_vector = {50.0f, 10.0f, 0.0f};
+        glm_translate(model_model_mat, translation_vector);
 
-        vec3 scale_model = {0.5f, 0.5f, 0.5f};
-        glm_scale(camera.model, scale_model);
+        float angle = glm_rad(5.0f);
+        vec3 axis = {0.0f, 0.0f, -2.0f};
+
+        glm_rotate(model_model_mat, angle, axis);
+        
+        //vec3 scale_model = {0.1f, 0.1f, 0.1f};
+        //glm_scale(camera.model, scale_model);
 
         draw_model(model_t, &shader);
-
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (float*)camera.view);
         glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, (float*)camera.projection);
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)camera.model);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (float*)model_model_mat);
 
+        glm_mat4_identity(model_terrain_mat);
+        
         shader_use(&test);
         glUniformMatrix4fv(glGetUniformLocation(test.ID, "view"), 1, GL_FALSE, (float*)camera.view);
         glUniformMatrix4fv(glGetUniformLocation(test.ID, "projection"), 1, GL_FALSE, (float*)camera.projection);
-        glUniformMatrix4fv(glGetUniformLocation(test.ID, "model"), 1, GL_FALSE, (float*)camera.model);
+        glUniformMatrix4fv(glGetUniformLocation(test.ID, "model"), 1, GL_FALSE, (float*)model_terrain_mat);
 
-        glBindVertexArray(terrainVAO);
-        glDrawArrays(GL_POINTS, 0, num_vertices);
+        vao_bind(terrain_vao); 
+        glDrawArrays(GL_TRIANGLES, 0, num_vertices);
         glBindVertexArray(0);
 
         skybox_render(skybox, &camera);

@@ -2,12 +2,19 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/stb_image.h"
 
-// TODO: clean this shit up
 
-Texture texture_load(const char* filename)
+Texture load_texture(const char* filename)
 {
     Texture texture;
     memset(&texture, 0, sizeof(Texture));
+
+    glGenTextures(1, &texture.id);
+    glBindTexture(GL_TEXTURE_2D, texture.id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     int width, height, num_channels;
     unsigned char* image_data = stbi_load(filename, &width, &height, &num_channels, 0);
@@ -16,20 +23,10 @@ Texture texture_load(const char* filename)
         return texture;
     }
 
-    glGenTextures(1, &texture.id);
-    glBindTexture(GL_TEXTURE_2D, texture.id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     GLenum format = (num_channels == 1) ? GL_RED : (num_channels == 3) ? GL_RGB : GL_RGBA;
-    
+
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image_data);
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     stbi_image_free(image_data);
     return texture;
@@ -41,6 +38,12 @@ Texture load_model_texture(const char* filename, const char* type_name)
     memset(&texture, 0, sizeof(Texture));
 
     glGenTextures(1, &texture.id);
+    glBindTexture(GL_TEXTURE_2D, texture.id);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int width, height, num_channels;
     stbi_set_flip_vertically_on_load(true);
@@ -52,14 +55,8 @@ Texture load_model_texture(const char* filename, const char* type_name)
 
     GLenum format = (num_channels == 1) ? GL_RED : (num_channels == 3) ? GL_RGB : GL_RGBA;
 
-    glBindTexture(GL_TEXTURE_2D, texture.id);
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
     
@@ -74,8 +71,15 @@ Texture load_model_texture(const char* filename, const char* type_name)
 Texture load_cubemap_texture(const char* faces[6])
 {
     Texture texture;
+
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     for (int i = 0; i < 6; ++i) {
         stbi_set_flip_vertically_on_load(false);
@@ -89,12 +93,6 @@ Texture load_cubemap_texture(const char* faces[6])
             return texture;
         }
     }
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return texture;
 }

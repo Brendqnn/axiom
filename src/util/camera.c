@@ -10,7 +10,7 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->yaw = yaw;
     camera->pitch = pitch;
     camera->fov = fov;
-    camera->movement_speed = CAMERA_SPEED;
+    camera->movement_speed = MOVEMENT_SPEED;
     camera->mouse_sensitivity = CAMERA_SENSITIVITY;
 
     camera->first_mouse = true;

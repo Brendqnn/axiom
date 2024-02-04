@@ -49,4 +49,6 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
  */
 void draw_model(Model model, Shader *shader);
 
+void free_model(Model model);
+
 #endif // MODEL_H
