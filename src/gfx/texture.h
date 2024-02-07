@@ -11,6 +11,7 @@ typedef struct {
     unsigned int id;
     char type[32];
     char path[128];
+
     unsigned int count;
 } Texture;
 
@@ -55,6 +56,10 @@ Texture load_cubemap_texture(const char* faces[6]);
  * @param texture The Texture structure to be bound.
  */
 void bind_texture(Texture *texture);
+
+
+
+Texture load_cubemap_from_file(const char *filename);
 
 /**
  * Unbind the currently bound texture.

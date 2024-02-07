@@ -97,6 +97,43 @@ Texture load_cubemap_texture(const char* faces[6])
     return texture;
 }
 
+// TODO: figure out how to load skybox from a single file???
+Texture load_cubemap_from_file(const char *filename)
+{
+    Texture texture;
+    glGenTextures(1, &texture.id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
+    
+    int width, height, num_channels;
+    stbi_set_flip_vertically_on_load(false);
+    unsigned char* data = stbi_load(filename, &width, &height, &num_channels, 0);
+    if (!data) {
+        fprintf(stderr, "Failed to load texture: %s\n", filename);
+        stbi_image_free(data);
+    }
+    
+    int face_width = width/4;
+    int face_height = height/3;
+    int face_channels = num_channels;
+
+    for (int i = 0; i < 6; ++i) {
+        int xoff = (i % 4) * face_width;
+        int yoff = (i / 4) * face_height;
+
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, face_width, face_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data + (yoff * width + xoff) * face_channels); 
+    }
+
+    stbi_image_free(data);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return texture;
+}
+
 void bind_texture(Texture *texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture->id);

@@ -5,13 +5,17 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <stdbool.h>
+#include <cglm/cglm.h>
 #include "../util/util.h"
 
 #include "mesh.h"
 
+
 typedef struct {
     Mesh *meshes;
     unsigned int num_meshes;
+
+    mat4 matrix; 
 } Model;
 
 /**
@@ -49,6 +53,7 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
  */
 void draw_model(Model model, Shader *shader);
 
-void free_model(Model model);
+
+void free_model(Model *model);
 
 #endif // MODEL_H

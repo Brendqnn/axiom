@@ -7,10 +7,12 @@ Axiom is a 3D graphics engine.
 
 ## Build
 - Windows:
+
 1. ./build.bat
 2. ./bin/Axiom.exe
 
 - Linux:
+
 1. ./build.sh
 2. ./bin/main
 

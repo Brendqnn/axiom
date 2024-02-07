@@ -8,6 +8,7 @@
 #include "texture.h"
 #include "../util/camera.h"
 
+
 typedef struct {
     VAO vao;
     VBO vbo;

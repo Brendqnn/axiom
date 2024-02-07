@@ -27,19 +27,26 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     glm_vec3_normalize(camera->right);
     glm_vec3_cross(camera->right, camera->front, camera->up);
     glm_vec3_normalize(camera->up);
+
+    glm_perspective(glm_rad(camera->fov), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 3000.0f, camera->projection);
 }
 
-void camera_update(Camera* camera, GLFWwindow* window, float delta_time)
+void camera_update(Camera* camera, Window *window)
 {
-    camera_process_input(camera, window, delta_time);
+    window->current_frame = glfwGetTime();
+    window->frame_delta = window->current_frame - window->last_frame;
+    window->last_frame = window->current_frame;
+
+    camera_get_view_matrix(camera);
+    camera_process_input(camera, window, window->frame_delta);
 }
 
-void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
+void camera_process_input(Camera *camera, Window *window, float delta_time)
 {
     float velocity = camera->movement_speed * delta_time;
     vec3 movement = {0.0f, 0.0f, 0.0f}; // Initialize the movement vector.
     
-    switch (glfwGetKey(window, GLFW_KEY_W)) {
+    switch (glfwGetKey(window->handle, GLFW_KEY_W)) {
         case GLFW_PRESS:
             glm_vec3_scale(camera->front, velocity, movement);
             glm_vec3_add(camera->position, movement, camera->position);
@@ -51,7 +58,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
             break;
     }
 
-    switch (glfwGetKey(window, GLFW_KEY_S)) {
+    switch (glfwGetKey(window->handle, GLFW_KEY_S)) {
         case GLFW_PRESS:
             glm_vec3_scale(camera->front, velocity, movement);
             glm_vec3_sub(camera->position, movement, camera->position);
@@ -63,7 +70,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
             break;
     }
 
-    switch (glfwGetKey(window, GLFW_KEY_A)) {
+    switch (glfwGetKey(window->handle, GLFW_KEY_A)) {
         case GLFW_PRESS:
             glm_vec3_scale(camera->right, velocity, movement);
             glm_vec3_sub(camera->position, movement, camera->position);
@@ -75,7 +82,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
             break;
     }
 
-    switch (glfwGetKey(window, GLFW_KEY_D)) {
+    switch (glfwGetKey(window->handle, GLFW_KEY_D)) {
         case GLFW_PRESS:
             glm_vec3_scale(camera->right, velocity, movement);
             glm_vec3_add(camera->position, movement, camera->position);
@@ -88,7 +95,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time)
     }
 }
 
-void camera_process_mouse(Camera* camera, double x_offset, double y_offset)
+void camera_process_mouse(Camera *camera, double x_offset, double y_offset)
 {
     if (camera->first_mouse) {
         camera->last_x = x_offset;
@@ -119,7 +126,7 @@ void camera_process_mouse(Camera* camera, double x_offset, double y_offset)
     glm_vec3_normalize(camera->up);
 }
 
-void camera_get_view_matrix(Camera* camera)
+void camera_get_view_matrix(Camera *camera)
 {
     vec3 center;
     glm_vec3_add(camera->position, camera->front, center);
@@ -135,15 +142,15 @@ void remove_translation_matrix(Camera *camera)
     glm_mat4_ins3(view_without_translation_mat3, camera->view);
 }
 
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+void cursor_position_callback(GLFWwindow *window, double xpos, double ypos)
 {
     Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
-    static bool firstMouse = true;
+    static bool first_mouse = true;
 
-    if (firstMouse) {
+    if (first_mouse) {
         xpos = WINDOW_WIDTH / 2;
         ypos = WINDOW_HEIGHT / 2;
-        firstMouse = false;
+        first_mouse = false;
     }
 
     double center_x = WINDOW_WIDTH / 2;
@@ -159,3 +166,18 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 
     glfwSetCursorPos(window, center_x, center_y);
 }
+
+void set_cursor_pos(Camera *camera, Window *window)
+{
+    glfwSetCursorPosCallback(window->handle, cursor_position_callback);
+    glfwSetWindowUserPointer(window->handle, camera);
+    glfwSetInputMode(window->handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void disable_cursor_pos(GLFWwindow *window)
+{
+    glfwSetCursorPosCallback(window, NULL);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+

@@ -106,6 +106,11 @@ void shader_setint(const Shader *shader, const char* name, int value)
     glUniform1i(glGetUniformLocation(shader->ID, name), value);
 }
 
+void shader_uniform_mat4(Shader *shader, const char *name, void *matrix)
+{
+    glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE, (float*)matrix);
+}
+
 void shader_destroy(Shader *shader)
 {
     glDeleteProgram(shader->ID);

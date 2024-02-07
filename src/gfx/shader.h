@@ -2,8 +2,10 @@
 #define SHADER_H
 
 #include <GL/glew.h>
+//#include <cglm/cglm.h>
 #include <stdio.h>
 #include <string.h>
+
 
 typedef struct Shader {
     unsigned int ID;
@@ -43,6 +45,15 @@ void shader_setint(const Shader *shader, const char* name, int value);
  * @param shader The Shader structure.
  */
 void shader_use(const Shader *shader);
+
+/**
+ * Set uniform shader.
+ *
+ * @param shader The Shader structure
+ * @param name Name of the source matrix being passed
+ * @param matrix The matrix for the source shader
+ */
+void shader_uniform_mat4(Shader *shader, const char* name, void *matrix);
 
 /**
  * Destroy the shader program.

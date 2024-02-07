@@ -4,7 +4,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
+
 #include "util.h"
+#include "../gfx/window.h"
 
 
 typedef struct {
@@ -38,7 +40,7 @@ typedef struct {
  * @param pitch    The initial pitch angle.
  * @param fov      The field of view angle.
  */
-void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov);
+void camera_init(Camera *camera, vec3 position, vec3 up, float yaw, float pitch, float fov);
 
 /**
  * Update the camera's state.
@@ -47,7 +49,7 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
  * @param window      The GLFW window.
  * @param delta_time  The time elapsed since the last frame.
  */
-void camera_update(Camera* camera, GLFWwindow* window, float delta_time);
+void camera_update(Camera *camera, Window *window);
 
 /**
  * Process input events to control the camera.
@@ -56,7 +58,7 @@ void camera_update(Camera* camera, GLFWwindow* window, float delta_time);
  * @param window      The GLFW window.
  * @param delta_time  The time elapsed since the last frame.
  */
-void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time);
+void camera_process_input(Camera *camera, Window *window, float delta_time);
 
 /**
  * Process mouse movements to update the camera's orientation.
@@ -65,7 +67,7 @@ void camera_process_input(Camera* camera, GLFWwindow* window, float delta_time);
  * @param x_offset   The change in the x-coordinate of the mouse.
  * @param y_offset   The change in the y-coordinate of the mouse.
  */
-void camera_process_mouse(Camera* camera, double x_offset, double y_offset);
+void camera_process_mouse(Camera *camera, double x_offset, double y_offset);
 
 /**
  * Get the view matrix of the camera.
@@ -73,7 +75,7 @@ void camera_process_mouse(Camera* camera, double x_offset, double y_offset);
  * @param camera      The Camera structure.
  * @param view_matrix  Output parameter for the view matrix.
  */
-void camera_get_view_matrix(Camera* camera);
+void camera_get_view_matrix(Camera *camera);
 
 /**
  * Callback for handling cursor position changes.
@@ -82,7 +84,7 @@ void camera_get_view_matrix(Camera* camera);
  * @param xpos   The x-coordinate of the cursor.
  * @param ypos   The y-coordinate of the cursor.
  */
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
 
 /**
  * Remove the translation from view matrix.
@@ -91,5 +93,9 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
  * @param output_matrix  The output matrix without translation
  */
 void remove_translation_matrix(Camera *camera);
+
+void set_cursor_pos(Camera *camera, Window *window);
+
+void disable_cursor_pos(GLFWwindow *window);
 
 #endif  // CAMERA_H

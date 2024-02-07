@@ -62,7 +62,7 @@ Skybox skybox_init(const char *skybox_faces[])
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     skybox.cubemap = load_cubemap_texture(skybox_faces);
-
+    
     skybox.shader = shader_create("res/shaders/skybox.vert", "res/shaders/skybox.frag");
     
     return skybox;

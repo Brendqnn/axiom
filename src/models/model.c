@@ -110,9 +110,17 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
 
 void draw_model(Model model, Shader *shader)
 {
+    glm_mat4_identity(model.matrix);
+
     for (unsigned int i = 0; i < model.num_meshes; i++) {
         draw_mesh(model.meshes[i], shader);
-    } 
+    }
+}
+
+void free_model(Model *model)
+{
+    free(model->meshes->textures);
+    free(model->meshes);
 }
 
 
