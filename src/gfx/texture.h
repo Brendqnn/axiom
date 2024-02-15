@@ -66,7 +66,7 @@ Texture load_cubemap_from_file(const char *filename);
  *
  * @param texture The Texture structure to be unbound.
  */
-void unbind_texture(Texture *texture);
+void unbind_texture();
 
 /**
  * Destroy a texture.

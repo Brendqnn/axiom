@@ -3,7 +3,7 @@
 
 Window ax_window_create(int width, int height, const char *name)
 {
-    Window window = {0};
+    Window window;
 
     window.width = width;
     window.height = height;
@@ -18,10 +18,10 @@ Window ax_window_create(int width, int height, const char *name)
     }
 
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);    
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);    
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 8);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     window.handle = glfwCreateWindow(width, height, name, NULL, NULL);
     if (window.handle == NULL) {
@@ -37,6 +37,8 @@ Window ax_window_create(int width, int height, const char *name)
         glfwTerminate();
         exit(0);
     }
+
+    printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
 
     glfwSwapInterval(1);
     glViewport(0, 0, window.width, window.height);

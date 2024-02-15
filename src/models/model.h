@@ -10,9 +10,10 @@
 
 #include "mesh.h"
 
+#define MAX_MESHES 100
 
 typedef struct {
-    Mesh *meshes;
+    Mesh meshes[MAX_MESHES];
     unsigned int num_meshes;
 
     mat4 matrix; 

@@ -4,7 +4,7 @@
 Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
                  unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures)
 {
-    Mesh mesh = {0};
+    Mesh mesh;
 
     mesh.num_vertices = num_vertices;
     mesh.num_indices = num_indices;
@@ -12,7 +12,7 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
 
     mesh.vertices = vertices;
     mesh.indices = indices;
-    mesh.textures = textures;
+    memcpy(mesh.textures, textures, num_textures * sizeof(Texture));
 
     glGenVertexArrays(1, &mesh.VAO);
     glGenBuffers(1, &mesh.VBO);

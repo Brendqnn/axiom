@@ -1,27 +1,25 @@
 #include "model.h"
 
 
-Texture* load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name)
+void load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name, Texture array[])
 {
-    unsigned int texture_count = aiGetMaterialTextureCount(material, texture_type);
-    if (texture_count == 0) {
-        return NULL;
-    }
-
-    Texture* textures = (Texture*)malloc(texture_count * sizeof(Texture));
-    for (unsigned int i = 0; i < texture_count; ++i) {
-        struct aiString texture_path;
-        if (aiGetMaterialTexture(material, texture_type, i, &texture_path, NULL, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-            textures[i] = load_model_texture(texture_path.data, texture_type_name);
-            textures[i].count = texture_count;
+    for (unsigned int i = 0; i < ARRAY_LEN(array); ++i) {
+        struct aiString path;
+        if (aiGetMaterialTexture(material, texture_type, i, &path, NULL, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
+            array[i] = load_model_texture(path.data, texture_type_name);
         }
     }
-    return textures;
+}
+
+unsigned int get_material_texture_count(struct aiMaterial *material, enum aiTextureType texture_type)
+{
+    unsigned int texture_count = aiGetMaterialTextureCount(material, texture_type);
+    return texture_count;
 }
 
 Model load_model(const char* model_path)
 {
-    Model model = {0};
+    Model model;
     
     const struct aiScene* scene = aiImportFile(model_path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene) {
@@ -29,13 +27,9 @@ Model load_model(const char* model_path)
         return model;
     }
 
-    printf("Number of meshes in model: %d\n", scene->mNumMeshes);
-
-    model.meshes = (Mesh*)malloc(scene->mNumMeshes * sizeof(Mesh));
     process_node(scene->mRootNode, scene, &model);
     
     aiReleaseImport(scene);
-
     return model;
 }
 
@@ -54,7 +48,6 @@ void process_node(const struct aiNode* node, const struct aiScene* scene, Model 
 void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Model *model)
 {
     unsigned int num_vertices = ai_mesh->mNumVertices;
-    printf("num vertices: %d\n", num_vertices);
     unsigned int num_indices = 0;
     unsigned int num_textures = 0;
     
@@ -92,13 +85,13 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         }
     }
 
-    Texture *textures = NULL;
+    Texture textures[MAX_TEXTURES];
+    memset(textures, 0, MAX_TEXTURES * sizeof(Texture));
 
     if (ai_mesh->mMaterialIndex >= 0) {
-        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
-        Texture* diffuse_textures = load_material_textures(material, aiTextureType_DIFFUSE, "texture_diffuse1");
-        num_textures = diffuse_textures->count;
-        textures = diffuse_textures;
+        struct aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        unsigned int num_diff_textures = get_material_texture_count(material, aiTextureType_DIFFUSE);
+        Texture diffuse_textures[num_diff_textures];
     } 
 
     Mesh processed_mesh = create_mesh(vertices, indices, textures, num_vertices, num_indices, num_textures);
@@ -110,8 +103,6 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
 
 void draw_model(Model model, Shader *shader)
 {
-    glm_mat4_identity(model.matrix);
-
     for (unsigned int i = 0; i < model.num_meshes; i++) {
         draw_mesh(model.meshes[i], shader);
     }
@@ -119,9 +110,5 @@ void draw_model(Model model, Shader *shader)
 
 void free_model(Model *model)
 {
-    free(model->meshes->textures);
-    free(model->meshes);
+
 }
-
-
-

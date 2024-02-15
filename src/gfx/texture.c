@@ -139,7 +139,7 @@ void bind_texture(Texture *texture)
     glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
-void unbind_texture(Texture *texture)
+void unbind_texture()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
