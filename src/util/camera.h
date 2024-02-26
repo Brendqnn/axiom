@@ -29,6 +29,8 @@ typedef struct {
     
     double last_x;
     double last_y;
+
+    float view_distance;
 } Camera;
 
 void camera_init(Camera *camera, vec3 position, vec3 up, float yaw, float pitch, float fov);
@@ -41,5 +43,6 @@ void remove_translation_matrix(Camera *camera);
 void set_cursor_pos_callback(Camera *camera, Window *window);
 void enable_cursor_capture(Camera *camera, Window *window);
 void disable_cursor_capture(GLFWwindow *window);
+void set_camera_view(Camera *camera);
 
 #endif  // CAMERA_H

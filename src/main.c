@@ -1,12 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <cglm/cglm.h>
-#include <noise1234.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include <time.h>
 
 #include "util/camera.h"
 #include "gfx/window.h"
@@ -16,44 +10,82 @@
 #include "gfx/skybox.h"
 #include "util/rtm.h"
 
-#define TERRAIN_HEIGHT 100
-#define TERRAIN_WIDTH 100
-#define TERRAIN_SCALE 100.0f
-#define PEAK_SCALE 2.0f
 
-void gen_terrain(float *vertices)
+bool is_camera_near_edge(Camera *camera)
 {
-    float xstart = -TERRAIN_HEIGHT/2.0f * TERRAIN_SCALE;
-    float zstart = -TERRAIN_WIDTH/2.0f * TERRAIN_SCALE;
+    float terrian_size = TERRAIN_SCALE*TERRAIN_SCALE/2.0f;
+    float abs_x = fabs(camera->position[0]);
+    float abs_y = fabs(camera->position[2]);
+
+    if (abs_x + camera->view_distance > terrian_size || abs_y + camera->view_distance > terrian_size) {
+        return true;
+    }
+
+    return false;
+}
+
+static inline float get_terrain_frequency(float min, float max)
+{
+    return min + ((float)rand()/RAND_MAX) * (max - min); 
+}
+
+void gen_terrain(float map[TERRAIN_WIDTH][TERRAIN_HEIGHT], float vertices[])
+{
+    float x_start = -TERRAIN_WIDTH / 2.0f * TERRAIN_SCALE;
+    float z_start = -TERRAIN_HEIGHT / 2.0f * TERRAIN_SCALE;
 
     int index = 0;
-    for (int x = 0; x < TERRAIN_HEIGHT; ++x) {
-        for (int z = 0; z < TERRAIN_WIDTH; ++z) {
-            // Triangle 1
-            vertices[index++] = xstart + x * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * noise2(x * 0.1f, z * 0.1f) * TERRAIN_SCALE;
-            vertices[index++] = zstart + z * TERRAIN_SCALE;
+    for (int x = 0; x < TERRAIN_WIDTH; ++x) {
+        for (int z = 0; z < TERRAIN_HEIGHT; ++z) {
+            // Vertex 1
+            vertices[index++] = x_start + x * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * map[x][z] * TERRAIN_SCALE;
+            vertices[index++] = z_start + z * TERRAIN_SCALE;
 
-            vertices[index++] = xstart + (x + 1) * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * noise2((x + 1) * 0.1f, z * 0.1f) * TERRAIN_SCALE;
-            vertices[index++] = zstart + z * TERRAIN_SCALE;
+            // Vertex 2
+            vertices[index++] = x_start + (x + 1) * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * map[x + 1][z] * TERRAIN_SCALE;
+            vertices[index++] = z_start + z * TERRAIN_SCALE;
 
-            vertices[index++] = xstart + x * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * noise2(x * 0.1f, (z + 1) * 0.1f) * TERRAIN_SCALE;
-            vertices[index++] = zstart + (z + 1) * TERRAIN_SCALE;
+            // Vertex 3
+            vertices[index++] = x_start + x * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * map[x][z + 1] * TERRAIN_SCALE;
+            vertices[index++] = z_start + (z + 1) * TERRAIN_SCALE;
 
-            // Triangle 2
-            vertices[index++] = xstart + x * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * noise2(x * 0.1f, (z + 1) * 0.1f) * TERRAIN_SCALE;
-            vertices[index++] = zstart + (z + 1) * TERRAIN_SCALE;
+            // Vertex 4
+            vertices[index++] = x_start + x * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * map[x][z + 1] * TERRAIN_SCALE;
+            vertices[index++] = z_start + (z + 1) * TERRAIN_SCALE;
 
-            vertices[index++] = xstart + (x + 1) * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * noise2((x + 1) * 0.1f, z * 0.1f) * TERRAIN_SCALE;
-            vertices[index++] = zstart + z * TERRAIN_SCALE;
+            // Vertex 5
+            vertices[index++] = x_start + (x + 1) * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * map[x + 1][z] * TERRAIN_SCALE;
+            vertices[index++] = z_start + z * TERRAIN_SCALE;
 
-            vertices[index++] = xstart + (x + 1) * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * noise2((x + 1) * 0.1f, (z + 1) * 0.1f) * TERRAIN_SCALE;
-            vertices[index++] = zstart + (z + 1) * TERRAIN_SCALE;
+            // Vertex 6
+            vertices[index++] = x_start + (x + 1) * TERRAIN_SCALE;
+            vertices[index++] = PEAK_SCALE * map[x + 1][z + 1] * TERRAIN_SCALE;
+            vertices[index++] = z_start + (z + 1) * TERRAIN_SCALE;
+        }
+    }
+}
+
+void generate_heightmap(float map[TERRAIN_WIDTH][TERRAIN_HEIGHT])
+{
+    for (int x = 0; x < TERRAIN_WIDTH + 1; x++) { 
+        for (int z = 0; z < TERRAIN_HEIGHT + 1; z++) {
+            float frequency = get_terrain_frequency(1.0f, 0.01f);
+            float height = pnoise3(x * 0.1f, frequency, z * 0.1f, 1024, 1024, 1024);
+            map[x][z] = height;
+        }
+    }
+}
+
+void print_heightmap(float heightmap[TERRAIN_WIDTH][TERRAIN_HEIGHT]) 
+{
+    for (int x = 0; x < TERRAIN_WIDTH; x++) {
+        for (int z = 0; z < TERRAIN_HEIGHT; z++) {
+            printf("%.2f\n", heightmap[x][z]);
         }
     }
 }
@@ -68,10 +100,11 @@ int main(void)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui_ImplGlfw_InitForOpenGL(axiom.handle, true);
-    ImGui_ImplOpenGL3_Init("#version 460");// Enable docking
+    ImGui_ImplOpenGL3_Init("#version 460"); // Enable docking
     ImGui::StyleColorsDark();
 
     bool my_tool_active = true;
+    bool vsync = false;
 
     const char* skybox_face_paths[6] = { 
         "res/skybox/right.jpg",
@@ -83,19 +116,44 @@ int main(void)
     };
 
     int num_vertices = TERRAIN_WIDTH * TERRAIN_HEIGHT * 6 * 3;
-    float terrain[num_vertices];
-    gen_terrain(terrain);
+    float terrain[num_vertices]; // Each vertex has 3 coordinates
+    float map[TERRAIN_WIDTH][TERRAIN_HEIGHT];
+    generate_heightmap(map);
 
-    VAO terrain_vao = vao_create();
-    VBO terrain_vbo = vbo_create(GL_ARRAY_BUFFER, false);
+    gen_terrain(map, terrain);
 
-    vao_bind(terrain_vao);
-    vbo_buffer(terrain_vbo, terrain, sizeof(terrain));
-    link_attrib(terrain_vao, terrain_vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
+    vec2 offsets[2] = {
+        {0.0f, 0.0f},   // Offset for the first instance
+        {10000.0f, 0.0f}  // Offset for the second instance
+    };
 
-    Model model_t = load_model("res/Bench.obj");
+    unsigned int instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * 2, &offsets[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-    Shader shader = shader_create("res/shaders/default.vert", "res/shaders/default.frag");
+    GLuint terrain_vao, terrain_vbo;
+    glGenVertexArrays(1, &terrain_vao);
+    glGenBuffers(1, &terrain_vbo);
+
+    glBindVertexArray(terrain_vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, terrain_vbo);
+    glBufferData(GL_ARRAY_BUFFER, num_vertices * sizeof(float), terrain, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);    
+    glVertexAttribDivisor(2, 1);
+
+    //Model model_t = load_model("res/tree/scene.gltf");
+
+    //Shader shader = shader_create("res/shaders/default.vert", "res/shaders/default.frag");
     Shader test = shader_create("res/shaders/terrain.vert", "res/shaders/terrain.frag");
 
     Skybox skybox = skybox_init(skybox_face_paths);
@@ -108,8 +166,6 @@ int main(void)
 
     glEnable(GL_DEPTH_TEST);
 
-    mat4 terrain_model_mat;
- 
     set_cursor_pos_callback(&camera, &axiom);
 
     while (!ax_window_should_close(&axiom)) {
@@ -119,35 +175,27 @@ int main(void)
 
         double memory = get_memory_usage_mb();
 
-        glm_mat4_identity(model_t.matrix);
-
-        draw_model(model_t, &shader);
-        shader_uniform_mat4(&shader, "view", camera.view);
-        shader_uniform_mat4(&shader, "projection", camera.projection);
-        shader_uniform_mat4(&shader, "model", model_t.matrix);
-
-        glm_mat4_identity(terrain_model_mat);
-
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         shader_use(&test);
         shader_uniform_mat4(&test, "view", camera.view);
         shader_uniform_mat4(&test, "projection", camera.projection);
-        shader_uniform_mat4(&test, "model", terrain_model_mat);
 
-        vao_bind(terrain_vao);
-        glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+        for (int i = 0; i < 2; ++i) {
+            char uniformName[20];
+            sprintf(uniformName, "offsets[%d]", i); 
 
-        glBindVertexArray(0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            shader_uniform_mat4(&test, uniformName, offsets[i]);
+        }
+
+        glBindVertexArray(terrain_vao);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, num_vertices, 2);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 
         skybox_render(skybox, &camera); 
 
         if (glfwGetKey(axiom.handle, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(axiom.handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            free_model(&model_t);
             exit(1);
         }
 
@@ -159,16 +207,36 @@ int main(void)
         ImGui::DockSpaceOverViewport(main_viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
         ImGui::Begin("Performance");
-        double fps = calculate_fps(axiom.last_frame);
+        double fps = calculate_fps();
         ImGui::Text("FPS: %.00f\r", fps);
+        ImGui::Separator();
         ImGui::Text("Memory: %.02f MB", memory);
 
-        // Add more elements here
+        ImGui::End();
+
+        ImGui::Begin("Settings");
+        ImGui::Text("Enable V-Sync");
+        if (ImGui::Checkbox(" ", &vsync)) {
+            if (vsync) {
+                enable_vsync();
+            } else {
+                disable_vsync();
+            }
+        }
         ImGui::Separator();
-        ImGui::Text("Additional Information:");
-        //ImGui::Checkbox("Wireframe Mode", &wireframe_mode);
-        //ImGui::SliderFloat("Terrain Scale", &terrain_scale, 1.0f, 100.0f);
-        //ImGui::ColorEdit3("Background Color", background_color);
+        ImGui::Text("Render Distance");
+        if (ImGui::SliderFloat(" ", &(camera.view_distance), 1000.0f, 10000.0f)) {
+            set_camera_view(&camera);
+        }
+        ImGui::End();
+
+        ImGui::Begin("Camera");
+        ImGui::Text("Camera Position: (%.02f, %.02f, %.02f)\n", camera.position[0], camera.position[1], camera.position[2]);
+        bool edges = is_camera_near_edge(&camera);
+        ImGui::Checkbox(" ", &edges);
+        ImGui::Separator();
+        ImGui::Text("Movement Speed");
+        ImGui::SliderFloat(" ", &(camera.movement_speed), 100.0f, 1000.0f);
         ImGui::End();
 
         ImGui::Render();

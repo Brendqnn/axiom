@@ -1,14 +1,22 @@
 #include "model.h"
 
 
-void load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name, Texture array[])
+Texture *load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name)
 {
-    for (unsigned int i = 0; i < ARRAY_LEN(array); ++i) {
-        struct aiString path;
-        if (aiGetMaterialTexture(material, texture_type, i, &path, NULL, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-            array[i] = load_model_texture(path.data, texture_type_name);
+    unsigned int texture_count = aiGetMaterialTextureCount(material, texture_type);
+    if (texture_count == 0) {
+        return NULL;
+    }
+
+    Texture* textures = (Texture*)malloc(texture_count * sizeof(Texture));
+    for (unsigned int i = 0; i < texture_count; ++i) {
+        struct aiString texture_path;
+        if (aiGetMaterialTexture(material, texture_type, i, &texture_path, NULL, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
+            textures[i] = load_model_texture(texture_path.data, texture_type_name);
+            textures[i].count = texture_count;
         }
     }
+    return textures; 
 }
 
 unsigned int get_material_texture_count(struct aiMaterial *material, enum aiTextureType texture_type)
@@ -85,13 +93,12 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
         }
     }
 
-    Texture textures[MAX_TEXTURES];
-    memset(textures, 0, MAX_TEXTURES * sizeof(Texture));
-
+    Texture *textures = NULL;
     if (ai_mesh->mMaterialIndex >= 0) {
         struct aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        Texture* diffuse_textures = load_material_textures(material, aiTextureType_DIFFUSE, "texture_diffuse1");
         unsigned int num_diff_textures = get_material_texture_count(material, aiTextureType_DIFFUSE);
-        Texture diffuse_textures[num_diff_textures];
+        textures = diffuse_textures;
     } 
 
     Mesh processed_mesh = create_mesh(vertices, indices, textures, num_vertices, num_indices, num_textures);
@@ -110,5 +117,5 @@ void draw_model(Model model, Shader *shader)
 
 void free_model(Model *model)
 {
-
+    free(model->meshes->textures);
 }

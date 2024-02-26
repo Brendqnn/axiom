@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
     unsigned int *indices;
     Vertex *vertices;
-    Texture textures[MAX_TEXTURES];
+    Texture *textures;
     unsigned int num_vertices;
     unsigned int num_indices;
     unsigned int num_textures;

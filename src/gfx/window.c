@@ -39,8 +39,7 @@ Window ax_window_create(int width, int height, const char *name)
     }
 
     printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
-
-    glfwSwapInterval(1);
+       
     glViewport(0, 0, window.width, window.height);
 
     return window;

@@ -13,8 +13,9 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->yaw = yaw;
     camera->pitch = pitch;
     camera->fov = fov;
-    camera->movement_speed = MOVEMENT_SPEED;
+    camera->movement_speed = 100;
     camera->mouse_sensitivity = CAMERA_SENSITIVITY;
+    camera->view_distance = 1000.0f;
 
     camera->first_mouse = true;
     camera->debug_ui = true;
@@ -32,8 +33,12 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     glm_vec3_cross(camera->right, camera->front, camera->up);
     glm_vec3_normalize(camera->up);
 
-    glm_perspective(glm_rad(camera->fov), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 5000.0f, camera->projection);
+    set_camera_view(camera);
+}
 
+void set_camera_view(Camera *camera)
+{
+    glm_perspective(glm_rad(camera->fov), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, camera->view_distance, camera->projection);
 }
 
 void camera_update(Camera* camera, Window *window)
@@ -193,5 +198,3 @@ void disable_cursor_capture(GLFWwindow *window)
 {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
-
-

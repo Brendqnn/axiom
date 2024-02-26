@@ -1,6 +1,6 @@
 #include "util.h"
 
-double calculate_fps(double previous_time)
+double calculate_fps()
 {
     static double last_display_time = 0.0;  // Initialize to 0.0
     static double fps = 0.0;
@@ -23,3 +23,12 @@ double calculate_fps(double previous_time)
     return fps;
 }
 
+void enable_vsync()
+{
+    glfwSwapInterval(1);
+}
+
+void disable_vsync()
+{
+    glfwSwapBuffers(0);
+}
