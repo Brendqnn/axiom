@@ -1,7 +1,7 @@
 #include "model.h"
 
 
-Texture *load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name)
+Texture* load_material_textures(struct aiMaterial* material, enum aiTextureType texture_type, const char* texture_type_name)
 {
     unsigned int texture_count = aiGetMaterialTextureCount(material, texture_type);
     if (texture_count == 0) {
@@ -16,13 +16,7 @@ Texture *load_material_textures(struct aiMaterial* material, enum aiTextureType 
             textures[i].count = texture_count;
         }
     }
-    return textures; 
-}
-
-unsigned int get_material_texture_count(struct aiMaterial *material, enum aiTextureType texture_type)
-{
-    unsigned int texture_count = aiGetMaterialTextureCount(material, texture_type);
-    return texture_count;
+    return textures;
 }
 
 Model load_model(const char* model_path)
@@ -94,10 +88,11 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
     }
 
     Texture *textures = NULL;
+
     if (ai_mesh->mMaterialIndex >= 0) {
-        struct aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        struct aiMaterial* material = scene->mMaterials[ai_mesh->mMaterialIndex];
         Texture* diffuse_textures = load_material_textures(material, aiTextureType_DIFFUSE, "texture_diffuse1");
-        unsigned int num_diff_textures = get_material_texture_count(material, aiTextureType_DIFFUSE);
+        num_textures = diffuse_textures->count;
         textures = diffuse_textures;
     } 
 
@@ -110,6 +105,8 @@ void process_mesh(const struct aiMesh* ai_mesh, const struct aiScene* scene, Mod
 
 void draw_model(Model model, Shader *shader)
 {
+    glm_mat4_identity(model.matrix);
+
     for (unsigned int i = 0; i < model.num_meshes; i++) {
         draw_mesh(model.meshes[i], shader);
     }
@@ -118,4 +115,7 @@ void draw_model(Model model, Shader *shader)
 void free_model(Model *model)
 {
     free(model->meshes->textures);
+    free(model->meshes);
 }
+
+

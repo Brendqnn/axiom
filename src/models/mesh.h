@@ -8,8 +8,6 @@
 #include "../gfx/shader.h"
 #include "../gfx/texture.h"
 
-#define MAX_TEXTURES 25
-
 typedef struct {
     float position[3];
     float normals[3];
@@ -17,20 +15,38 @@ typedef struct {
 } Vertex;
 
 typedef struct {
-    unsigned int *indices;
-    Vertex *vertices;
-    Texture *textures;
     unsigned int num_vertices;
     unsigned int num_indices;
     unsigned int num_textures;
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int EBO;
+
+    unsigned int VAO, VBO, EBO;
+
+    unsigned int *indices;
+    Texture *textures;
+    Vertex *vertices;
 } Mesh;
 
-
+/**
+ * Create a Mesh with specified vertices, indices, and textures.
+ *
+ * @param vertices      Array of vertices for the mesh.
+ * @param indices       Array of indices defining the mesh geometry.
+ * @param textures      Array of textures associated with the mesh.
+ * @param num_vertices  Number of vertices in the vertices array.
+ * @param num_indices   Number of indices in the indices array.
+ * @param num_textures  Number of textures in the textures array.
+ *
+ * @return A Mesh structure representing the created mesh.
+ */
 Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
                  unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures);
+
+/**
+ * Draw the Mesh using the specified shader.
+ *
+ * @param mesh   The Mesh to be drawn.
+ * @param shader The shader program to use for rendering.
+ */
 void draw_mesh(Mesh mesh, Shader *shader);
 
 #endif // MESH_H

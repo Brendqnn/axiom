@@ -30,5 +30,5 @@ void enable_vsync()
 
 void disable_vsync()
 {
-    glfwSwapBuffers(0);
+    glfwSwapInterval(0);
 }

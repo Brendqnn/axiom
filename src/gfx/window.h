@@ -17,9 +17,11 @@ typedef struct {
 
     double last_frame, current_frame;
     float frame_delta;
+    bool fullscreen;
 } Window;
 
 Window ax_window_create(int width, int height, const char *name);
+void toggle_fullscreen(Window *window);
 bool ax_window_should_close(Window *window);
 
 #endif // WINDOW_H

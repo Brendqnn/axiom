@@ -21,8 +21,9 @@ void vao_bind(VAO vao)
 void link_attrib(VAO vao, VBO vbo, GLuint index, GLint size, GLenum type, GLsizei stride, size_t offset)
 {
     vbo_bind(vbo);
-    glVertexAttribPointer(0, size, type, GL_FALSE, stride, (void *)offset);
+    glVertexAttribPointer(index, size, type, GL_FALSE, stride, (GLvoid*)offset);
     glEnableVertexAttribArray(index);
     vbo_bind((VBO){0});
 }
+
 

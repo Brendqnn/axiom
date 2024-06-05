@@ -35,37 +35,49 @@ void gen_terrain(float map[TERRAIN_WIDTH][TERRAIN_HEIGHT], float vertices[])
     float z_start = -TERRAIN_HEIGHT / 2.0f * TERRAIN_SCALE;
 
     int index = 0;
+    float peak_scale = 1.0f;
+
     for (int x = 0; x < TERRAIN_WIDTH; ++x) {
         for (int z = 0; z < TERRAIN_HEIGHT; ++z) {
-            // Vertex 1
             vertices[index++] = x_start + x * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * map[x][z] * TERRAIN_SCALE;
+            vertices[index++] = peak_scale * map[x][z] * TERRAIN_SCALE;
             vertices[index++] = z_start + z * TERRAIN_SCALE;
+        }
+    }
+}
 
-            // Vertex 2
-            vertices[index++] = x_start + (x + 1) * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * map[x + 1][z] * TERRAIN_SCALE;
-            vertices[index++] = z_start + z * TERRAIN_SCALE;
+void gen_texture_coordinates(float texture_coords[], float scale_factor)
+{
+    int index = 0;
+    for (int x = 0; x < TERRAIN_WIDTH; ++x) {
+        for (int z = 0; z < TERRAIN_HEIGHT; ++z) {
+            float s = (float)x / TERRAIN_WIDTH * scale_factor;
+            float t = (float)z / TERRAIN_HEIGHT * scale_factor;
+            
+            texture_coords[index++] = s;
+            texture_coords[index++] = t;
+        }
+    }
+}
 
-            // Vertex 3
-            vertices[index++] = x_start + x * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * map[x][z + 1] * TERRAIN_SCALE;
-            vertices[index++] = z_start + (z + 1) * TERRAIN_SCALE;
+void gen_terrain_indices(unsigned int indices[]) {
+    int index = 0;
+    for (int x = 0; x < TERRAIN_WIDTH - 1; ++x) {
+        for (int z = 0; z < TERRAIN_HEIGHT - 1; ++z) {
+            int topLeft = x * TERRAIN_HEIGHT + z;
+            int topRight = topLeft + 1;
+            int bottomLeft = (x + 1) * TERRAIN_HEIGHT + z;
+            int bottomRight = bottomLeft + 1;
 
-            // Vertex 4
-            vertices[index++] = x_start + x * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * map[x][z + 1] * TERRAIN_SCALE;
-            vertices[index++] = z_start + (z + 1) * TERRAIN_SCALE;
+            // First triangle
+            indices[index++] = topLeft;
+            indices[index++] = bottomLeft;
+            indices[index++] = topRight;
 
-            // Vertex 5
-            vertices[index++] = x_start + (x + 1) * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * map[x + 1][z] * TERRAIN_SCALE;
-            vertices[index++] = z_start + z * TERRAIN_SCALE;
-
-            // Vertex 6
-            vertices[index++] = x_start + (x + 1) * TERRAIN_SCALE;
-            vertices[index++] = PEAK_SCALE * map[x + 1][z + 1] * TERRAIN_SCALE;
-            vertices[index++] = z_start + (z + 1) * TERRAIN_SCALE;
+            // Second triangle
+            indices[index++] = topRight;
+            indices[index++] = bottomLeft;
+            indices[index++] = bottomRight;
         }
     }
 }
@@ -74,8 +86,7 @@ void generate_heightmap(float map[TERRAIN_WIDTH][TERRAIN_HEIGHT])
 {
     for (int x = 0; x < TERRAIN_WIDTH + 1; x++) { 
         for (int z = 0; z < TERRAIN_HEIGHT + 1; z++) {
-            float frequency = get_terrain_frequency(1.0f, 0.01f);
-            float height = pnoise3(x * 0.1f, frequency, z * 0.1f, 1024, 1024, 1024);
+            float height = pnoise3(x * 0.1f, 1.0f, z * 0.1f, 1024, 1024, 1024);
             map[x][z] = height;
         }
     }
@@ -92,7 +103,9 @@ void print_heightmap(float heightmap[TERRAIN_WIDTH][TERRAIN_HEIGHT])
 
 int main(void)
 {
-    Window axiom = ax_window_create(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom v1.11");
+    Window axiom = ax_window_create(WINDOW_WIDTH, WINDOW_HEIGHT, "Axiom v1.0");
+    axiom.fullscreen = true;
+    toggle_fullscreen(&axiom);
 
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -100,73 +113,69 @@ int main(void)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui_ImplGlfw_InitForOpenGL(axiom.handle, true);
-    ImGui_ImplOpenGL3_Init("#version 460"); // Enable docking
+    ImGui_ImplOpenGL3_Init("#version 460");
     ImGui::StyleColorsDark();
 
-    bool my_tool_active = true;
-    bool vsync = false;
+    bool vsync = true;
 
-    const char* skybox_face_paths[6] = { 
-        "res/skybox/right.jpg",
-        "res/skybox/left.jpg",
-        "res/skybox/top.jpg",
-        "res/skybox/bottom.jpg",
-        "res/skybox/front.jpg",
-        "res/skybox/back.jpg"
+    const char* skybox_face_paths[6] = {
+        "res/skybox/px.jpg",
+        "res/skybox/nx.jpg",
+        "res/skybox/py.jpg",
+        "res/skybox/ny.jpg",
+        "res/skybox/pz.jpg",
+        "res/skybox/nz.jpg"
     };
 
-    int num_vertices = TERRAIN_WIDTH * TERRAIN_HEIGHT * 6 * 3;
-    float terrain[num_vertices]; // Each vertex has 3 coordinates
+    int num_vertices = TERRAIN_WIDTH * TERRAIN_HEIGHT * 3;
+    int num_indices = (TERRAIN_WIDTH - 1) * (TERRAIN_HEIGHT - 1) * 6;
     float map[TERRAIN_WIDTH][TERRAIN_HEIGHT];
+    float vertices[num_vertices];
+    float texture_coords[TERRAIN_WIDTH * TERRAIN_HEIGHT * 2];
+    unsigned int indices[num_indices];
+
+    Texture dirt = load_texture("res/terrain/forest_ground_04_diff_4k.jpg");
+    Texture dirt_grass = load_texture("res/terrain/forrest_ground_01_diff_4k.jpg");
+
     generate_heightmap(map);
+    gen_terrain(map, vertices);
+    float texture_scale = 62.0f;
+    gen_texture_coordinates(texture_coords, texture_scale);
+    gen_terrain_indices(indices);
 
-    gen_terrain(map, terrain);
+    VAO terrain_vao = vao_create();
+    VBO terrain_vbo = vbo_create(GL_ARRAY_BUFFER, false);
+    VBO terrain_tbo = vbo_create(GL_ARRAY_BUFFER, false);
+    EBO terrain_ebo = ebo_create();
 
-    vec2 offsets[2] = {
-        {0.0f, 0.0f},   // Offset for the first instance
-        {10000.0f, 0.0f}  // Offset for the second instance
-    };
+    vao_bind(terrain_vao);
 
-    unsigned int instanceVBO;
-    glGenBuffers(1, &instanceVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * 2, &offsets[0], GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    vbo_buffer(terrain_vbo, vertices, sizeof(vertices));
+    link_attrib(terrain_vao, terrain_vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
 
-    GLuint terrain_vao, terrain_vbo;
-    glGenVertexArrays(1, &terrain_vao);
-    glGenBuffers(1, &terrain_vbo);
+    vbo_buffer(terrain_tbo, texture_coords, sizeof(texture_coords));
+    link_attrib(terrain_vao, terrain_tbo, 1, 2, GL_FLOAT, 2 * sizeof(float), 0);
 
-    glBindVertexArray(terrain_vao);
+    ebo_buffer(terrain_ebo, indices, sizeof(indices));
 
-    glBindBuffer(GL_ARRAY_BUFFER, terrain_vbo);
-    glBufferData(GL_ARRAY_BUFFER, num_vertices * sizeof(float), terrain, GL_STATIC_DRAW);
+    Model model_t = load_model("res/models/trees/Prunus_Pendula.obj");
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);    
-    glVertexAttribDivisor(2, 1);
-
-    //Model model_t = load_model("res/tree/scene.gltf");
-
-    //Shader shader = shader_create("res/shaders/default.vert", "res/shaders/default.frag");
+    Shader shader = shader_create("res/shaders/default.vert", "res/shaders/default.frag");
     Shader test = shader_create("res/shaders/terrain.vert", "res/shaders/terrain.frag");
 
     Skybox skybox = skybox_init(skybox_face_paths);
 
     Camera camera;
     vec3 position = {0.0f, 0.0f, 100.0f};
-    vec3 up = {0.0f, 100.0f, 0.0f};
-    
+    vec3 up = {0.0f, 50.0f, 0.0f};
+
     camera_init(&camera, position, up, -90.0f, 0.0f, CAMERA_FOV);
 
     glEnable(GL_DEPTH_TEST);
 
     set_cursor_pos_callback(&camera, &axiom);
+
+    mat4 terrain_model_mat;
 
     while (!ax_window_should_close(&axiom)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -175,27 +184,47 @@ int main(void)
 
         double memory = get_memory_usage_mb();
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glm_mat4_identity(model_t.matrix);
+
+        vec3 scale_vector = {10.0f, 10.0f, 10.0f};
+        glm_scale(model_t.matrix, scale_vector);
+
+        draw_model(model_t, &shader);
+        shader_uniform_mat4(&shader, "view", camera.view);
+        shader_uniform_mat4(&shader, "projection", camera.projection);
+        shader_uniform_mat4(&shader, "model", model_t.matrix);
+
+        glm_mat4_identity(terrain_model_mat);
+
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, dirt.id);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, dirt_grass.id);
 
         shader_use(&test);
+        shader_setint(&test, "terrainTextures[0]", 0);
+        shader_setint(&test, "terrainTextures[1]", 1);
+        
         shader_uniform_mat4(&test, "view", camera.view);
         shader_uniform_mat4(&test, "projection", camera.projection);
+        shader_uniform_mat4(&test, "model", terrain_model_mat);
 
-        for (int i = 0; i < 2; ++i) {
-            char uniformName[20];
-            sprintf(uniformName, "offsets[%d]", i); 
+        vao_bind(terrain_vao);
+        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
 
-            shader_uniform_mat4(&test, uniformName, offsets[i]);
-        }
+        glBindVertexArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        glBindVertexArray(terrain_vao);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, num_vertices, 2);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         skybox_render(skybox, &camera); 
 
         if (glfwGetKey(axiom.handle, GLFW_KEY_X) == GLFW_PRESS && glfwGetKey(axiom.handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            free_model(&model_t);
+            destroy_texture(&dirt);
+            destroy_texture(&dirt_grass);
             exit(1);
         }
 
@@ -204,7 +233,7 @@ int main(void)
         ImGui::NewFrame();
 
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        ImGui::DockSpaceOverViewport(main_viewport, ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::DockSpaceOverViewport(main_viewport->ID, main_viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
         ImGui::Begin("Performance");
         double fps = calculate_fps();
@@ -225,7 +254,7 @@ int main(void)
         }
         ImGui::Separator();
         ImGui::Text("Render Distance");
-        if (ImGui::SliderFloat(" ", &(camera.view_distance), 1000.0f, 10000.0f)) {
+        if (ImGui::SliderFloat(" ", &(camera.view_distance), 1000.0f, 20000.0f)) {
             set_camera_view(&camera);
         }
         ImGui::End();

@@ -10,6 +10,7 @@ Window ax_window_create(int width, int height, const char *name)
     window.last_frame = glfwGetTime();
     window.current_frame = 0.0;
     window.frame_delta = 0.0f;
+    window.fullscreen = false;
 
     if (!glfwInit()) {
         fprintf(stderr, "%s", "Failed to initialize GLFW.\n");
@@ -43,6 +44,17 @@ Window ax_window_create(int width, int height, const char *name)
     glViewport(0, 0, window.width, window.height);
 
     return window;
+}
+
+void toggle_fullscreen(Window *window)
+{
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    if (window->fullscreen) {
+        glfwSetWindowMonitor(window->handle, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    } else {
+        glfwSetWindowMonitor(window->handle, NULL, 0, 0, window->width, window->height, GLFW_DONT_CARE);
+    }
 }
 
 bool ax_window_should_close(Window *window)

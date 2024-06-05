@@ -13,9 +13,9 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     camera->yaw = yaw;
     camera->pitch = pitch;
     camera->fov = fov;
-    camera->movement_speed = 100;
+    camera->movement_speed = 500;
     camera->mouse_sensitivity = CAMERA_SENSITIVITY;
-    camera->view_distance = 1000.0f;
+    camera->view_distance = 50000.0f;
 
     camera->first_mouse = true;
     camera->debug_ui = true;
