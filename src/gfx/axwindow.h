@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef AXWINDOW_H
+#define AXWINDOW_H
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -8,20 +8,20 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include "../util/util.h"
+#include "../util/axutil.h"
 
 
 typedef struct {
     GLFWwindow *handle;
     int width, height;
-
+    
     double last_frame, current_frame;
     float frame_delta;
     bool fullscreen;
-} Window;
+} AXWindow;
 
-Window ax_window_create(int width, int height, const char *name);
-void toggle_fullscreen(Window *window);
-bool ax_window_should_close(Window *window);
+AXWindow ax_window_create(int width, int height, const char *name);
+void ax_toggle_fullscreen(AXWindow *window);
+bool ax_window_should_close(AXWindow *window);
 
-#endif // WINDOW_H
+#endif // AXWINDOW_H

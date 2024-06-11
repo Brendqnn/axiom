@@ -1,8 +1,8 @@
-#include "vbo.h"
+#include "axvbo.h"
 
-VBO vbo_create(GLint type, bool dynamic)
+AXVbo ax_create_vbo(GLint type, bool dynamic)
 {
-    VBO vbo = {
+    AXVbo vbo = {
         .type = type,
         .dynamic = dynamic
     };
@@ -12,19 +12,19 @@ VBO vbo_create(GLint type, bool dynamic)
     return vbo;
 }
 
-void vbo_destroy(VBO vbo)
+void ax_destroy_vbo(AXVbo vbo)
 {
     glDeleteBuffers(1, &vbo.ID);
 }
 
-void vbo_bind(VBO vbo)
+void ax_bind_vbo(AXVbo vbo)
 {
     glBindBuffer(vbo.type, vbo.ID);
 }
 
-void vbo_buffer(VBO vbo, float vertices[], size_t size)
+void ax_bind_vbo_buffer(AXVbo vbo, float vertices[], size_t size)
 {
-    vbo_bind(vbo);
+    ax_bind_vbo(vbo);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 }
 

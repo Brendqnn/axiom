@@ -1,6 +1,6 @@
-#include "util.h"
+#include "axutil.h"
 
-double calculate_fps()
+double ax_calculate_fps()
 {
     static double last_display_time = 0.0;  // Initialize to 0.0
     static double fps = 0.0;
@@ -23,12 +23,12 @@ double calculate_fps()
     return fps;
 }
 
-void enable_vsync()
+void ax_enable_vsync()
 {
     glfwSwapInterval(1);
 }
 
-void disable_vsync()
+void ax_disable_vsync()
 {
     glfwSwapInterval(0);
 }

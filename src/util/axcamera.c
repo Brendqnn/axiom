@@ -1,11 +1,12 @@
-#include "camera.h"
 #include <math.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "axcamera.h"
 
-void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov)
+
+void ax_init_camera(AXCamera* camera, vec3 position, vec3 up, float yaw, float pitch, float fov)
 {
     glm_vec3_copy(position, camera->position);
     glm_vec3_copy(up, camera->world_up);
@@ -33,25 +34,25 @@ void camera_init(Camera* camera, vec3 position, vec3 up, float yaw, float pitch,
     glm_vec3_cross(camera->right, camera->front, camera->up);
     glm_vec3_normalize(camera->up);
 
-    set_camera_view(camera);
+    ax_set_camera_view(camera);
 }
 
-void set_camera_view(Camera *camera)
+void ax_set_camera_view(AXCamera *camera)
 {
     glm_perspective(glm_rad(camera->fov), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, camera->view_distance, camera->projection);
 }
 
-void camera_update(Camera* camera, Window *window)
+void ax_update_camera(AXCamera* camera, AXWindow *window)
 {
     window->current_frame = glfwGetTime();
     window->frame_delta = window->current_frame - window->last_frame;
     window->last_frame = window->current_frame;
 
-    camera_get_view_matrix(camera);
-    camera_process_input(camera, window, window->frame_delta);
+    ax_get_camera_view_matrix(camera);
+    ax_process_camera_input(camera, window, window->frame_delta);
 }
 
-void camera_process_input(Camera *camera, Window *window, float delta_time)
+void ax_process_camera_input(AXCamera *camera, AXWindow *window, float delta_time)
 {
     float velocity = camera->movement_speed * delta_time;
     vec3 movement = {0.0f, 0.0f, 0.0f}; // Initialize the movement vector.
@@ -105,7 +106,7 @@ void camera_process_input(Camera *camera, Window *window, float delta_time)
     }
 }
 
-void camera_process_mouse(Camera *camera, double x_offset, double y_offset)
+void ax_process_mouse_input(AXCamera *camera, double x_offset, double y_offset)
 {
     if (camera->first_mouse && !camera->debug_ui) {
         camera->last_x = x_offset;
@@ -136,14 +137,14 @@ void camera_process_mouse(Camera *camera, double x_offset, double y_offset)
     glm_vec3_normalize(camera->up);
 }
 
-void camera_get_view_matrix(Camera *camera)
+void ax_get_camera_view_matrix(AXCamera *camera)
 {
     vec3 center;
     glm_vec3_add(camera->position, camera->front, center);
     glm_lookat(camera->position, center, camera->up, camera->view);
 }
 
-void remove_translation_matrix(Camera *camera)
+void ax_remove_translation_matrix(AXCamera *camera)
 {
     mat3 view_without_translation_mat3;
     glm_mat4_pick3(camera->view, view_without_translation_mat3);
@@ -152,9 +153,9 @@ void remove_translation_matrix(Camera *camera)
     glm_mat4_ins3(view_without_translation_mat3, camera->view);
 }
 
-void cursor_position_callback(GLFWwindow *window, double xpos, double ypos)
+void ax_cursor_position_callback(GLFWwindow *window, double xpos, double ypos)
 {
-    Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
+    AXCamera* camera = (AXCamera*)glfwGetWindowUserPointer(window);
     static bool first_mouse = true;
 
     if (!camera->debug_ui) {
@@ -173,28 +174,62 @@ void cursor_position_callback(GLFWwindow *window, double xpos, double ypos)
         xoffset *= sensitivity;
         yoffset *= sensitivity;
 
-        camera_process_mouse(camera, xoffset, yoffset);
+        ax_process_mouse_input(camera, xoffset, yoffset);
 
         glfwSetCursorPos(window, center_x, center_y);
     }
 
     // Switch mouse to capture imgui input
     ImGuiIO& io = ImGui::GetIO();
-    io.MousePos = ImVec2((float)xpos + 10, (float)ypos + 30); // Dont ask...
+    io.MousePos = ImVec2((float)xpos + 10, (float)ypos + 30); // account for no fullscreen
 }
 
-void set_cursor_pos_callback(Camera *camera, Window *window)
+void ax_cursor_position_callback2(GLFWwindow *window, double xpos, double ypos)
+{
+    AXCamera* camera = (AXCamera*)glfwGetWindowUserPointer(window);
+    static bool first_mouse = true;
+
+    if (!camera->debug_ui) {
+        if (first_mouse) {
+            xpos = WINDOW_WIDTH/2;
+            ypos = WINDOW_HEIGHT/2;
+            first_mouse = false;
+        }
+
+        double center_x = WINDOW_WIDTH/2;
+        double center_y = WINDOW_HEIGHT/2;
+        double xoffset = xpos - center_x;
+        double yoffset = center_y - ypos;
+
+        float sensitivity = 0.1f;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+
+        ax_process_mouse_input(camera, xoffset, yoffset);
+
+        glfwSetCursorPos(window, center_x, center_y);
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.MousePos = ImVec2((float)xpos, (float)ypos); // account for fullscreen here
+}
+
+void ax_set_cursor_pos_callback(AXCamera *camera, AXWindow *window)
 {
     glfwSetWindowUserPointer(window->handle, camera);
-    glfwSetCursorPosCallback(window->handle, cursor_position_callback);
+    if (window->fullscreen) {
+        glfwSetCursorPosCallback(window->handle, ax_cursor_position_callback2); // there is definetly a better way to do this
+    } else {
+        glfwSetCursorPosCallback(window->handle, ax_cursor_position_callback);
+    }
 }
 
-void enable_cursor_capture(Camera *camera, Window *window)
+void ax_enable_cursor_capture(AXCamera *camera, AXWindow *window)
 {
     glfwSetInputMode(window->handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-void disable_cursor_capture(GLFWwindow *window)
+void ax_disable_cursor_capture(GLFWwindow *window)
 {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }

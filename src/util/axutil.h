@@ -20,9 +20,9 @@
 #define TERRAIN_WIDTH 100
 #define TERRAIN_SCALE 100.0f
 
-double calculate_fps();
-void enable_vsync();
-void disable_vsync();
+double ax_calculate_fps();
+void ax_enable_vsync();
+void ax_disable_vsync();
 
 #endif // UTIL_H
 

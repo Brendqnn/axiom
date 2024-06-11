@@ -1,13 +1,13 @@
 
-#include "texture.h"
+#include "axtexture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/stb_image.h"
 
 
-Texture load_texture(const char* filename)
+AXTexture ax_load_texture(const char* filename)
 {
-    Texture texture;
-    memset(&texture, 0, sizeof(Texture));
+    AXTexture texture;
+    memset(&texture, 0, sizeof(AXTexture));
 
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_2D, texture.id);
@@ -33,10 +33,10 @@ Texture load_texture(const char* filename)
     return texture;
 }
 
-Texture load_model_texture(const char* filename, const char* type_name)
+AXTexture ax_load_model_texture(const char* filename, const char* type_name)
 {
-    Texture texture;
-    memset(&texture, 0, sizeof(Texture));
+    AXTexture texture;
+    memset(&texture, 0, sizeof(AXTexture));
 
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_2D, texture.id);
@@ -69,9 +69,9 @@ Texture load_model_texture(const char* filename, const char* type_name)
     return texture;
 }
 
-Texture load_cubemap_texture(const char* faces[6])
+AXTexture ax_load_cubemap_textures(const char* faces[6])
 {
-    Texture texture;
+    AXTexture texture;
 
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
@@ -99,9 +99,9 @@ Texture load_cubemap_texture(const char* faces[6])
 }
 
 // TODO: figure out how to load skybox from a single file???
-Texture load_cubemap_from_file(const char *filename)
+AXTexture ax_load_cubemap_from_file(const char *filename)
 {
-    Texture texture;
+    AXTexture texture;
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
     
@@ -135,17 +135,12 @@ Texture load_cubemap_from_file(const char *filename)
     return texture;
 }
 
-void bind_texture(Texture *texture)
+void ax_bind_texture(AXTexture *texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
-void unbind_texture()
-{
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void destroy_texture(Texture *texture)
+void ax_destroy_texture(AXTexture *texture)
 {
     glDeleteTextures(1, &texture->id);
     texture->id = 0;

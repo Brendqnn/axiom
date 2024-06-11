@@ -1,4 +1,4 @@
-#include "shader.h"
+#include "axshader.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -31,7 +31,7 @@ static void check_compile_errors(unsigned int shader, const char *type)
     }
 }
 
-char* read_shader_source(const char* file_path)
+char* ax_read_shader(const char* file_path)
 {
     FILE *f;
     char *text;
@@ -57,17 +57,17 @@ char* read_shader_source(const char* file_path)
     return text;
 }
 
-Shader shader_create(const char* vertex_shader_path, const char* fragment_shader_path)
+AXShader ax_create_shader(const char* vertex_shader_path, const char* fragment_shader_path)
 {
-    Shader self;
+    AXShader self;
 
-    const char* vs_src = read_shader_source(vertex_shader_path);
-    const char* fs_src = read_shader_source(fragment_shader_path);
+    const char* vs_src = ax_read_shader(vertex_shader_path);
+    const char* fs_src = ax_read_shader(fragment_shader_path);
 
     if (!vs_src || !fs_src) {
         if (vs_src) free((void*)vs_src);
         if (fs_src) free((void*)fs_src);
-        Shader empty_shader = { 0 };
+        AXShader empty_shader = {0};
         return empty_shader;
     }
 
@@ -96,22 +96,22 @@ Shader shader_create(const char* vertex_shader_path, const char* fragment_shader
     return self;
 }
 
-void shader_use(const Shader *shader)
+void ax_use_shader(const AXShader *shader)
 {
     glUseProgram(shader->ID);
 }
 
-void shader_setint(const Shader *shader, const char* name, int value)
+void ax_set_shader_int(const AXShader *shader, const char* name, int value)
 {
     glUniform1i(glGetUniformLocation(shader->ID, name), value);
 }
 
-void shader_uniform_mat4(Shader *shader, const char *name, void *matrix)
+void ax_uniform_shader_mat4(AXShader *shader, const char *name, void *matrix)
 {
     glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE, (float*)matrix);
 }
 
-void shader_destroy(Shader *shader)
+void ax_free_shader(AXShader *shader)
 {
     glDeleteProgram(shader->ID);
     shader->ID = 0;

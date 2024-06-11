@@ -1,9 +1,9 @@
-#include "window.h"
+#include "axwindow.h"
 
 
-Window ax_window_create(int width, int height, const char *name)
+AXWindow ax_window_create(int width, int height, const char *name)
 {
-    Window window;
+    AXWindow window;
 
     window.width = width;
     window.height = height;
@@ -46,7 +46,7 @@ Window ax_window_create(int width, int height, const char *name)
     return window;
 }
 
-void toggle_fullscreen(Window *window)
+void ax_toggle_fullscreen(AXWindow *window)
 {
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -57,7 +57,7 @@ void toggle_fullscreen(Window *window)
     }
 }
 
-bool ax_window_should_close(Window *window)
+bool ax_window_should_close(AXWindow *window)
 {
     return glfwWindowShouldClose(window->handle);
 }

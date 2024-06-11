@@ -1,10 +1,10 @@
-#include "mesh.h"
+#include "axmesh.h"
 
 
-Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
+AXMesh ax_create_mesh(Vertex vertices[], unsigned int indices[], AXTexture textures[],
                  unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures)
 {
-    Mesh mesh = {0};
+    AXMesh mesh = {0};
 
     mesh.num_vertices = num_vertices;
     mesh.num_indices = num_indices;
@@ -35,16 +35,16 @@ Mesh create_mesh(Vertex vertices[], unsigned int indices[], Texture textures[],
     return mesh;
 }
 
-void draw_mesh(Mesh mesh, Shader *shader)
+void ax_draw_mesh(AXMesh mesh, AXShader *shader)
 {
-    shader_use(shader);
+    ax_use_shader(shader);
 
     for (unsigned int i = 0; i < mesh.num_textures; ++i)
     {
         char uniform_name[64];
         snprintf(uniform_name, sizeof(uniform_name), "material.texture%d", i);
 
-        shader_setint(shader, uniform_name, i);
+        ax_set_shader_int(shader, uniform_name, i);
 
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
@@ -56,3 +56,4 @@ void draw_mesh(Mesh mesh, Shader *shader)
 
     glActiveTexture(GL_TEXTURE0);
 }
+
