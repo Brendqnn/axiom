@@ -1,6 +1,9 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <slcodec.h>
+#include <pthread.h>
+#include <windows.h>
 
 #include "util/axcamera.h"
 #include "gfx/axwindow.h"
@@ -21,6 +24,18 @@
 ███     ███   ▒██      ██▒   ▒██████░   ▀██████▀   ▄████▄     ▄████▄
 
 */
+
+
+void *play_audio(void *args)
+{
+    SLAudioDevice *audio_device = ((SLAudioDevice**)args)[0];
+    SLStreamContext *stream_ctx = ((SLStreamContext**)args)[1];
+
+    Sleep(30000);
+    sl_play_audio_buffer(audio_device, stream_ctx);
+
+    return NULL;
+}
 
 bool is_camera_near_edge(AXCamera *camera)
 {
@@ -46,7 +61,7 @@ void gen_terrain(float map[TERRAIN_WIDTH][TERRAIN_HEIGHT], float vertices[])
     float z_start = -TERRAIN_HEIGHT / 2.0f * TERRAIN_SCALE;
 
     int index = 0;
-    float peak_scale = 0.0f;
+    float peak_scale = 1.0f;
 
     for (int x = 0; x < TERRAIN_WIDTH; ++x) {
         for (int z = 0; z < TERRAIN_HEIGHT; ++z) {
@@ -223,6 +238,24 @@ int main(void)
 
     mat4 terrain_model_mat;
 
+    SLAudioDevice audio_device = {0};
+    SLStreamContext stream_ctx = {0};
+    
+    sl_open_input_file("res/sfx/cicadas.mp3", &stream_ctx);
+    
+    sl_setup_resampler(&stream_ctx, SL_SAMPLE_RATE_96, 0.1f);
+    sl_decode_resample(&stream_ctx);
+
+    sl_set_audio_playback_device(&audio_device, &stream_ctx);
+
+    pthread_t audio_thread;
+    void *args[] = {&audio_device, &stream_ctx};
+
+    if (pthread_create(&audio_thread, NULL, play_audio, (void *)args)) {
+        fprintf(stderr, "Error creating thread\n");
+        return 1;
+    }
+
     while (!ax_window_should_close(&window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -242,7 +275,7 @@ int main(void)
 
         glm_mat4_identity(terrain_model_mat);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, dirt.id);
@@ -263,7 +296,7 @@ int main(void)
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         ax_render_skybox(skybox, &camera); 
 
@@ -335,10 +368,16 @@ int main(void)
         glfwPollEvents();
     }
 
+    if (pthread_join(audio_thread, NULL)) {
+        fprintf(stderr, "Error joining thread\n");
+        return 2;
+    }
+
     ax_destroy_texture(&dirt);
     ax_destroy_texture(&dirt_grass);
     ax_free_shader(&test);
     ax_free_shader(&shader);
+    
     glfwDestroyWindow(window.handle);
     glfwTerminate();
     

@@ -1,8 +1,8 @@
 UNAME_S = $(shell uname -s)
 
-CC=g++
-CFLAGS=-Wall -Wextra -Wpedantic -O3 -Ilib/glfw/include -Ilib/glew/include -Ilib/cglm/include -Ilib/assimp/include -Ilib/noise -Ilib/imgui
-LDFLAGS=-Llib/glfw -Llib/glew -Llib/assimp -lglfw3 -lopengl32 -lgdi32 -luser32 -lglew32 -lassimp-vc143-mt lib/noise/libnoise.a lib/imgui/libimgui.a
+CC=g++ -Wall -O3 
+CFLAGS=-Ilib/glfw/include -Ilib/glew/include -Ilib/cglm/include -Ilib/assimp/include -Ilib/noise -Ilib/imgui -I../streamline/include
+LDFLAGS=-Llib/glfw -Llib/glew -Llib/assimp -L../streamline/lib/ffmpeg/lib -lglfw3 -lopengl32 -lgdi32 -luser32 -lglew32 -lassimp-vc143-mt lib/noise/libnoise.a lib/imgui/libimgui.a lib/streamline/libstreamline.a -lavformat -lavcodec -lavutil -lswresample -lswscale -lavfilter
 
 SRC  = $(wildcard src/**/*.c) $(wildcard src/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c) 
 OBJ  = $(SRC:.c=.o)
