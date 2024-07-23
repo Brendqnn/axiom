@@ -1,8 +1,8 @@
 #include "axmesh.h"
 
 
-AXMesh ax_create_mesh(Vertex vertices[], unsigned int indices[], AXTexture textures[],
-                 unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures)
+AXMesh ax_create_mesh(Vertex vertices[], unsigned int indices[], AXTexture* textures,
+                      unsigned int num_vertices, unsigned int num_indices, unsigned int num_textures)
 {
     AXMesh mesh = {0};
 
@@ -23,7 +23,7 @@ AXMesh ax_create_mesh(Vertex vertices[], unsigned int indices[], AXTexture textu
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * num_vertices, vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * num_indices, indices, GL_STATIC_DRAW);
-    
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normals));
@@ -36,11 +36,10 @@ AXMesh ax_create_mesh(Vertex vertices[], unsigned int indices[], AXTexture textu
 }
 
 void ax_draw_mesh(AXMesh mesh, AXShader *shader)
-{
+{   
     ax_use_shader(shader);
 
-    for (unsigned int i = 0; i < mesh.num_textures; ++i)
-    {
+    for (unsigned int i = 0; i < mesh.num_textures; ++i) {
         char uniform_name[64];
         snprintf(uniform_name, sizeof(uniform_name), "material.texture%d", i);
 
@@ -53,7 +52,47 @@ void ax_draw_mesh(AXMesh mesh, AXShader *shader)
     glBindVertexArray(mesh.VAO);
     glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-
     glActiveTexture(GL_TEXTURE0);
 }
+
+void ax_draw_mesh_instances(AXMesh mesh, AXShader *shader, unsigned int instance_count)
+{
+    ax_use_shader(shader);
+    
+    for (int i = 0; i < mesh.num_textures; ++i) {
+        char uniform_name[64];
+        snprintf(uniform_name, sizeof(uniform_name), "material.texture%d", i);
+
+        ax_set_shader_int(shader, uniform_name, i);
+
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+    }
+
+    glBindVertexArray(mesh.VAO);
+    glDrawElementsInstanced(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0, instance_count);
+}
+
+void ax_free_mesh(AXMesh mesh)
+{
+    glDeleteVertexArrays(1, &mesh.VAO);
+    glDeleteBuffers(1, &mesh.VBO);
+    glDeleteBuffers(1, &mesh.EBO);
+    
+    for (int i = 0; i < mesh.num_textures; ++i) {
+        ax_free_texture(mesh.textures);
+    }
+
+    free(mesh.vertices);
+    free(mesh.indices);
+
+    mesh.vertices = NULL;
+    mesh.indices = NULL;
+    mesh.textures = NULL;
+    
+    mesh.num_vertices = 0;
+    mesh.num_indices = 0;
+    mesh.num_textures = 0;   
+}
+
 

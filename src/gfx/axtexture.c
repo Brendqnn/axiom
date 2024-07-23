@@ -1,4 +1,3 @@
-
 #include "axtexture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/stb_image.h"
@@ -17,6 +16,12 @@ AXTexture ax_load_texture(const char* filename)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
+    if (GLEW_EXT_texture_filter_anisotropic) {
+        GLfloat largest_supported_anisotropy;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, largest_supported_anisotropy);
+    }
+
     int width, height, num_channels;
     unsigned char* image_data = stbi_load(filename, &width, &height, &num_channels, 0);
     if (!image_data) {
@@ -25,8 +30,9 @@ AXTexture ax_load_texture(const char* filename)
     }
 
     GLenum format = (num_channels == 1) ? GL_RED : (num_channels == 3) ? GL_RGB : GL_RGBA;
+    GLenum internalFormat = (num_channels == 1) ? GL_R8 : (num_channels == 3) ? GL_RGB8 : GL_RGBA8;
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, image_data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(image_data);
@@ -46,17 +52,26 @@ AXTexture ax_load_model_texture(const char* filename, const char* type_name)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    if (GLEW_EXT_texture_filter_anisotropic) {
+        GLfloat largest_supported_anisotropy;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, largest_supported_anisotropy);
+    }
+
     int width, height, num_channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(filename, &width, &height, &num_channels, 0);
     if (!data) {
         fprintf(stderr, "Failed to load texture: %s\n", filename);
         stbi_image_free(data);
+        return texture;
     }
 
     GLenum format = (num_channels == 1) ? GL_RED : (num_channels == 3) ? GL_RGB : GL_RGBA;
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    GLenum internalFormat = (num_channels == 1) ? GL_R8 : (num_channels == 3) ? GL_RGB8 : GL_RGBA8;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
@@ -68,6 +83,7 @@ AXTexture ax_load_model_texture(const char* filename, const char* type_name)
 
     return texture;
 }
+
 
 AXTexture ax_load_cubemap_textures(const char* faces[6])
 {
@@ -118,10 +134,10 @@ AXTexture ax_load_cubemap_from_file(const char *filename)
     int face_channels = num_channels;
 
     for (int i = 0; i < 6; ++i) {
-        int xoff = (i % 4) * face_width;
-        int yoff = (i / 4) * face_height;
+        /* int xoff = (i % 4) * face_width; */
+        /* int yoff = (i / 4) * face_height; */
 
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, face_width, face_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data + (yoff * width + xoff) * face_channels); 
+        /* glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, face_width, face_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data + (yoff * width + xoff) * face_channels);  */
     }
 
     stbi_image_free(data);
@@ -140,7 +156,12 @@ void ax_bind_texture(AXTexture *texture)
     glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
-void ax_destroy_texture(AXTexture *texture)
+void ax_activate_texture(AXTexture *texture)
+{
+    // Todo: 
+}
+
+void ax_free_texture(AXTexture *texture)
 {
     glDeleteTextures(1, &texture->id);
     texture->id = 0;

@@ -18,7 +18,7 @@
 #define ARRAY_LEN(xs) sizeof(xs)/sizeof(xs[0])
 #define TERRAIN_HEIGHT 100
 #define TERRAIN_WIDTH 100
-#define TERRAIN_SCALE 100.0f
+#define TERRAIN_SCALE 1000.0f
 
 double ax_calculate_fps();
 void ax_enable_vsync();

@@ -1,6 +1,5 @@
 #include "axwindow.h"
 
-
 AXWindow ax_window_create(int width, int height, const char *name)
 {
     AXWindow window;
@@ -11,6 +10,7 @@ AXWindow ax_window_create(int width, int height, const char *name)
     window.current_frame = 0.0;
     window.frame_delta = 0.0f;
     window.fullscreen = false;
+    window.vsync = false;
 
     if (!glfwInit()) {
         fprintf(stderr, "%s", "Failed to initialize GLFW.\n");
@@ -22,7 +22,9 @@ AXWindow ax_window_create(int width, int height, const char *name)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);    
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    
+    glfwWindowHint(GLFW_SAMPLES, 16);
+    glEnable(GL_MULTISAMPLE);
 
     window.handle = glfwCreateWindow(width, height, name, NULL, NULL);
     if (window.handle == NULL) {
@@ -61,6 +63,5 @@ bool ax_window_should_close(AXWindow *window)
 {
     return glfwWindowShouldClose(window->handle);
 }
-
 
 

@@ -111,6 +111,16 @@ void ax_uniform_shader_mat4(AXShader *shader, const char *name, void *matrix)
     glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE, (float*)matrix);
 }
 
+void ax_set_shader_vec3(const AXShader *shader, const char* name, float x, float y, float z)
+{
+    glUniform3f(glGetUniformLocation(shader->ID, name), x, y, z);
+}
+
+void ax_set_shader_vec3_from_array(const AXShader *shader, const char* name, const float* values)
+{
+    glUniform3fv(glGetUniformLocation(shader->ID, name), 1, values);
+}
+
 void ax_free_shader(AXShader *shader)
 {
     glDeleteProgram(shader->ID);

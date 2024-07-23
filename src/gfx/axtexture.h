@@ -21,6 +21,6 @@ AXTexture ax_find_loaded_texture(AXTexture* textures, unsigned int num_textures,
 AXTexture ax_load_cubemap_textures(const char* faces[6]);
 void ax_bind_texture(AXTexture *texture);
 AXTexture ax_load_cubemap_from_file(const char *filename);
-void ax_destroy_texture(AXTexture *texture);
+void ax_free_texture(AXTexture *texture);
 
 #endif // AXTEXTURE_H

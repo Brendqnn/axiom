@@ -70,7 +70,6 @@ void ax_render_skybox(AXSkybox skybox, AXCamera *camera)
     glDepthFunc(GL_LEQUAL);
     ax_use_shader(&skybox.shader);
 
-    // comeback and fix this
     glUniformMatrix4fv(glGetUniformLocation(skybox.shader.ID, "view"), 1, GL_FALSE, (float*)camera->view);
     glUniformMatrix4fv(glGetUniformLocation(skybox.shader.ID, "projection"), 1, GL_FALSE, (float*)camera->projection);
 
