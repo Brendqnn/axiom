@@ -1,8 +1,8 @@
 
 # Axiom
 
-![Alt text](screenshots/new.png)
+Axiom is a game engine.
 
-who cares really 
+![Alt text](screenshots/new.png
 
 
