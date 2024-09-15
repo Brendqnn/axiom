@@ -1,7 +1,7 @@
 
 # Axiom
 
-![Alt text](screenshots/preview.png)
+![Alt text](screenshots/new.png)
 
 who cares really 
 
